@@ -247,7 +247,7 @@ class Monitoring(Timer):
                 self.terminate()
             logger.info('%s余额不足' % self.url)
 
-        if file_size >= 0.02 * 1024 ** 3:
+        if file_size >= 2.5 * 1024 ** 3:
             self.flag.set()
             self.terminate()
             logger.info('分段下载' + self.file_name)
