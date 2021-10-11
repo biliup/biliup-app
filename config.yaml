@@ -1,9 +1,0 @@
-user_name: your usrname
-pass_word: your password
-
-db_usr: root
-db_psw: 12345678
-source: ubuntu
-catalog: stream
-
-chromedrive_path: e.g. D:\\bilibiliupload\\chromedriver.exe
