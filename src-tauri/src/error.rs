@@ -4,9 +4,14 @@ use serde::{Serialize, Deserialize, Serializer};
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("{0}")]
+    Err(String),
     #[error(transparent)]
-    IO(#[from] reqwest::Error),
-
+    ReqIO(#[from] reqwest::Error),
+    #[error(transparent)]
+    YamlIO(#[from] serde_yaml::Error),
+    #[error(transparent)]
+    IO(#[from] std::io::Error),
     #[error(transparent)]
     Other(#[from] anyhow::Error),  // source and Display delegate to anyhow::Error
 }
@@ -47,6 +52,9 @@ impl Serialize for Error {
         match self {
             Error::IO(io) => serializer.serialize_str(&io.to_string()),
             Error::Other(other) => serializer.serialize_str(&other.to_string()),
+            Error::ReqIO(e) => serializer.serialize_str(&e.to_string()),
+            Error::YamlIO(e) => serializer.serialize_str(&e.to_string()),
+            Error::Err(e) => serializer.serialize_str(&e.to_string())
         }
     }
 }

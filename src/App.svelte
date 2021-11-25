@@ -2,12 +2,7 @@
 	import Login from './Login.svelte';
 	import Home from './Home.svelte';
 	import { isLogin } from './store.ts';
-	import { invoke } from '@tauri-apps/api/tauri';
-	// invoke('test')
-	// 		.then((res) =>
-	// 				console.log(`Message: ${res}`)
-	// 		)
-	// 		.catch((e) => console.log(e))
+
 </script>
 
 <main class="bg-gray-100 dark:bg-gray-800" on:drop|preventDefault on:dragover|preventDefault on:dragleave|preventDefault on:dragenter|preventDefault>

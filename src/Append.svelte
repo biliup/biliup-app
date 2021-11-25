@@ -2,30 +2,51 @@
     import {currentTemplate, attach} from './store.ts';
     import { fade } from 'svelte/transition';
     import { flip } from 'svelte/animate';
+    import {listen} from "@tauri-apps/api/event";
+    import {tweened} from "svelte/motion";
+    import {onMount} from "svelte";
+    import Progress from "./Progress.svelte";
+    async function progress() {
+        const unlisten = await listen('progress', event => {
+            // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
+            // event.payload is the payload object
+            // console.log(event);
+            for (const file of $currentTemplate['files']) {
+                if (file.filename === event.payload[0]) {
+                    // file.progress = Math.round(event.payload[1] * 100) / 100;
+                    // $speed = Math.round(event.payload[1] * 100) / 100;
+                    file.speed = event.payload[2];
+                    // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
+                    file.progress = event.payload[1];
+                    if (Math.round(event.payload[1] * 100) === 10000) file.complete = true;
+                    // unsubscribe = speed.subscribe(s => {
+                    //     console.log(s);
+                    //     file.progress =  Math.round(s * 100) / 100;
+                        $currentTemplate = $currentTemplate;
+                    // });
+                }
+            }
+            // unsubscribe();
+            // currentTemplate.update(c=>c);
 
+            // console.log($currentTemplate['files']);
+        });
+    }
+    progress();
+    // onMount(() => {
+    //
+    //     // var bar1 = new ldBar(".ldBar");
+    //     // console.log('the component has mounted');
+    //     // console.log(document.getElementsByClassName('ldBar'));
+    //     // var bar2 = document.getElementsByClassName('ldBar').ldBar;
+    //     // bar2.set(60);
+    // });
+
+    // let prog = 75;
 </script>
-
 <div in:fade class="flex flex-col">
     {#each $currentTemplate.files as file}
-        <div class="flex items-center justify-center space-x-2 px-1">
-            <div class="flex-none w-12 items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="m-auto h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-            </div>
-            <div class="flex-grow">
-                <span class="font-mono inline-block">
-                            {file.name} <span class="block max bg-yellow-300 border-yellow-300 border-opacity-60 border rounded-full"></span>
-                </span>
-                <div class="w-full h-2 bg-gray-400 rounded-full mt-3">
-                    <div class="w-3/4 h-full text-center text-xs text-white bg-green-500 rounded-full">
-                    </div>
-                </div>
-            </div>
-            <div class="flex-none w-16 h-16 ">
-                <!-- This item will not grow -->
-            </div>
-        </div>
+        <Progress name={file.name} complete={file.complete} bind:progress={file.progress} speed={file.speed}/>
     {/each}
 </div>
 
@@ -33,4 +54,11 @@
     .max {
         width: 5rem;
     }
+    /*.ldBar-label {*/
+    /*    display: none;*/
+            /*color: #09f;*/
+        /*font-family: 'varela round';*/
+        /*font-size: 2.5em;*/
+        /*font-weight: 900;*/
+    /*}*/
 </style>

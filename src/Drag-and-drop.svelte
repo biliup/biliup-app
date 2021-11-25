@@ -1,8 +1,9 @@
 <script>
     // import { createEventDispatcher } from 'svelte';
-    import {attach, currentTemplate} from './store.ts';
+    import {attach, currentTemplate, fileselect} from './store.ts';
     import { slide, fade, draw } from 'svelte/transition';
     import {quintOut} from "svelte/easing";
+    import {open} from "@tauri-apps/api/dialog";
     // const dispatch = createEventDispatcher();
 
     let draggedOver = false;
@@ -43,7 +44,6 @@
             e.preventDefault();
         }
     }
-
 </script>
 
 
@@ -60,13 +60,13 @@
         </div>
     {/if}
 
-    <label class="flex flex-col items-center justify-center cursor-pointer rounded-lg border-2 border-dashed w-full h-full p-5 group text-center">
+    <label on:click={fileselect} class="flex flex-col items-center justify-center cursor-pointer rounded-lg border-2 border-dashed w-full h-full p-5 group text-center">
 
         <img class="max-h-48 w-3/5 object-center" src="image-upload-concept-landing-page.png" alt="freepik image">
 
         <p class="mt-4 text-gray-500 "><span class="text-sm">拖拽</span> 视频到此处 <br/>或者从你的电脑中<a class="text-blue-600 hover:underline">选择</a> </p>
-        <input on:change={(event)=>attach(event.target.files)} on:change={(event)=> event.target.value=null}
-               type="file" class="hidden" multiple accept=".mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v">
+<!--        <input on:change={(event)=>attach(event.target.files)} on:change={(event)=> event.target.value=null}-->
+<!--               type="file" class="hidden" multiple accept=".mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v">-->
     </label>
 </div>
 
