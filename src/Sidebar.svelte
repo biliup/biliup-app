@@ -1,13 +1,42 @@
 <script lang="ts">
-    import {template, currentTemplate} from "./store.ts";
-    import { fly, blur } from 'svelte/transition';
-    let current = $template.keys().next().value;
-    currentTemplate.set($template.get(current));
+    import {template, currentTemplate, send, receive} from "./store.ts";
+    import {fly, blur, scale, crossfade} from 'svelte/transition';
+
+
+    export let current;
+    let items = [];
+    $: items = [...Object.keys($template)];
+
+    $: {
+        // for (const templateKey of Object.entries($template)) {
+        //     console.log('?', templateKey);
+        //     templateKey[0] = '测试0';
+        // }
+        if ($template[current]) $currentTemplate = $template[current];
+    }
     function add() {
-        template.update( map => map.set('未命名模板'+map.size, {'title': '', 'files': []}));
+        $template['未命名模板' + Object.keys($template).length] = {
+            title: '',
+            files: [],
+            copyright: 1,
+            source: "",
+            tid: 0,
+            desc: "",
+            tag: '',
+            dynamic: "",
+            cover: '',
+            desc_format_id: 0,
+            subtitle: {
+                open: 0,
+                lan: ''
+            },
+            videos: [],
+            open_subtitle: false
+        };
     }
     function select(item) {
-        currentTemplate.set($template.get(item));
+        // $currentTemplate = $template[item];
+        console.log('???', $template);
         current = item;
     }
 </script>
@@ -16,15 +45,25 @@
 
     <div class="flex flex-col justify-between flex-1 mt-6">
         <nav>
-            {#each [...$template.keys()] as item}
+            {#each items as item}
+
                 <a class:selected="{current === item}"
                    on:click="{() => select(item)}">
+                    {#if ($template[item].changed)}
+                        <span class="flex absolute h-1.5 w-1.5 top-0 right-0 flex">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-500"></span>
+                        </span>
+                    {/if}
                     <svg class="flex-none w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M7 7H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-
+                    {#if current !== item}
+                    <div out:send={{key: item}}></div>
+                    {/if}
                     <span class="mx-4 font-medium truncate">{item}</span>
                 </a>
+
             {/each}
         </nav>
 
@@ -34,11 +73,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
         </button>
-    </div>
-</div>
-<div class="grid justify-center w-screen h-screen rhs overflow-y-auto">
-    <div class="grid items-center justify-around min-h-screen">
-        <slot {current}></slot>
     </div>
 </div>
 

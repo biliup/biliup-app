@@ -80,3 +80,6 @@ typings/
 
 # FuseBox cache
 .fusebox/
+src-tauri/config.yaml
+src-tauri/cookies.json
+*.mp4

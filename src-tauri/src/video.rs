@@ -84,7 +84,11 @@ impl BiliBili {
         }
     }
 
-    pub async fn upload_file(&self, filepath: impl std::convert::AsRef<async_std::path::Path>, callback: impl FnMut(Instant, u64, usize)) -> Result<Video> {
+    pub async fn archive_pre(&self) -> Result<Value> {
+        Ok(self.client.get("https://member.bilibili.com/x/vupre/web/archive/pre").send().await?.json().await?)
+    }
+
+    pub async fn upload_file(&self, filepath: impl std::convert::AsRef<async_std::path::Path>, callback: impl FnMut(Instant, u64, usize)->bool) -> Result<Video> {
         let file = File::open(&filepath).await?;
         let line = Probe::probe().await?;
         let file_name =  filepath.as_ref().file_name().ok_or("No filename").unwrap().to_str();
@@ -131,7 +135,7 @@ struct Upos<'a> {
 }
 
 impl Upos<'_> {
-    async fn upload(file: File, path: &async_std::path::Path, ret: serde_json::Value, mut callback: impl FnMut(Instant, u64, usize)) -> Result<Video> {
+    async fn upload(file: File, path: &async_std::path::Path, ret: serde_json::Value, mut callback: impl FnMut(Instant, u64, usize)->bool) -> Result<Video> {
         let chunk_size = ret["chunk_size"].as_u64().unwrap() as usize;
         let auth = ret["auth"].as_str().unwrap();
         let endpoint = ret["endpoint"].as_str().unwrap();
@@ -189,7 +193,10 @@ impl Upos<'_> {
         tokio::pin!(stream);
         while let Some((part, size)) = stream.try_next().await? {
             parts.push(part);
-            (callback)(instant, total_size, size);
+            // (callback)(instant, total_size, size);
+            if callback(instant, total_size, size) {
+                bail!("移除视频");
+            }
         }
         //     let chunk = chunk.unwrap();
         //     let mut params =  json!({
@@ -287,6 +294,14 @@ pub struct LoginInfo {
 // const APPSEC: &str = "c75875c596a69eb55bd119e74b07cfe3";
 const APP_KEY: &str = "783bbb7264451d82";
 const APPSEC: &str = "2653583c8873dea268ab9386918b1d65";
+// const APP_KEY: &str = "4409e2ce8ffd12b8";
+// const APPSEC: &str = "59b43e04ad6965f34319062b478f83dd";
+// const APP_KEY: &str = "37207f2beaebf8d7";
+// const APPSEC: &str = "e988e794d4d4b6dd43bc0e89d6e90c43";
+// const APP_KEY: &str = "bca7e84c2d947ac6";
+// const APPSEC: &str = "60698ba2f68e01ce44738920a0ffe768";
+// const APP_KEY: &str = "bb3101000e232e27";
+// const APPSEC: &str = "36efcfed79309338ced0380abd824ac1";
 
 #[derive(Debug)]
 pub struct Client{

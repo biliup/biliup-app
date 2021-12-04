@@ -13,6 +13,7 @@
     "@fullhuman/postcss-purgecss": "^4.0.3",
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
+    "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
     "autoprefixer": "^10.3.7",
@@ -25,6 +26,7 @@
     "rollup-plugin-terser": "^7.0.0",
     "svelte": "^3.0.0",
     "svelte-check": "^2.0.0",
+    "svelte-dnd-action": "^0.9.12",
     "svelte-preprocess": "^4.9.8",
     "tailwindcss": "^2.2.17",
     "tslib": "^2.0.0",
@@ -32,6 +34,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8",
-    "sirv-cli": "^1.0.0"
+    "sirv-cli": "^1.0.0",
+    "tippy.js": "^6.3.7"
   }
 }

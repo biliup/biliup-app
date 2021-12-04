@@ -1,7 +1,10 @@
 <script lang="ts">
 	import Login from './Login.svelte';
 	import Home from './Home.svelte';
-	import { isLogin } from './store.ts';
+	import {isLogin} from './store.ts';
+	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
+	import {invoke} from "@tauri-apps/api/tauri";
+	overrideItemIdKeyNameBeforeInitialisingDndZones("filename");
 
 </script>
 

@@ -4,14 +4,31 @@ import {check_outros, group_outros, transition_out} from "svelte/internal";
 import {open} from "@tauri-apps/api/dialog";
 import {sep} from "@tauri-apps/api/path";
 import {invoke} from "@tauri-apps/api/tauri";
-let map = new Map();
-map.set('未命名模板', {'title': '', 'files': [], 'atomicInt': 0})
-map.set('未命名模板1', {'title': '', 'files': [], 'atomicInt': 0})
+import {crossfade, fly} from "svelte/transition";
+import {listen} from "@tauri-apps/api/event";
+import {createPop} from "./common";
+
 
 export const isLogin = writable(false);
-export const template = writable(map);
-export const currentTemplate = writable({});
-
+export const template = writable({});
+export const currentTemplate = writable({
+    title: '',
+    files: [],
+    copyright: 1,
+    source: "",
+    tid: 0,
+    desc: "",
+    dynamic: "",
+    tag: '',
+    videos: [],
+    changed: false
+});
+export const [send, receive] = crossfade({
+    duration: 800,
+    fallback: (node, params)=> {
+        return fly(node,{ x: 200, delay: 500 });
+    },
+});
 export const fileselect = () => {
     let properties = {
         // defaultPath: 'C:\\',
@@ -23,6 +40,7 @@ export const fileselect = () => {
     };
     open(properties).then((pathStr) => {
         console.log(pathStr);
+        if (!pathStr) return;
         attach(pathStr);
     });
 };
@@ -43,7 +61,6 @@ export function attach(files) {
 
         for ( const file of  files) {
             // file.type.match
-            console.log(file);
             // if (!file.type.match("video.*")){
             //     createPop('请上传视频文件！');
             //     continue;
@@ -92,46 +109,58 @@ function upload(video, temp) {
 
     invoke('upload', {
         video: video,
-    })
-        .then((res) => {
-            temp.atomicInt--;
-            video.filename = res[0].filename;
-            video.speed = res[1];
-            video.complete = true;
-            video.progress = 100;
-            currentTemplate.update(t => t);
-            if (allComplete(temp['files'], temp)) {
+    }).then((res) => {
+        // temp.atomicInt--;
+        video.filename = res[0].filename;
+        video.speed = res[1];
+        video.complete = true;
+        video.progress = 100;
+
+        console.log(`Message:`, res);
+    }).catch((e) => {
+        createPop(e, 5000);
+        console.log(e);
+    }).finally(() => {
+        temp.atomicInt--;
+        currentTemplate.update(t => t);
+        if (allComplete(temp['files'], temp)) {
                 console.log("???");
                 return;
+        }
+    })
+}
+
+export async function progress() {
+    // console.log('?', $currentTemplate['files']);
+    // console.log($currentTemplate.destroy);
+    // if ($currentTemplate.destroy) return;
+    return await listen('progress', event => {
+        // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
+        // event.payload is the payload object
+        // console.log('!', event);
+        currentTemplate.update((cur) => {
+            for (const file of cur['files']) {
+                if (file.filename === event.payload[0]) {
+                    // file.progress = Math.round(event.payload[1] * 100) / 100;
+                    // $speed = Math.round(event.payload[1] * 100) / 100;
+                    file.speed = event.payload[2];
+                    // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
+                    file.progress = event.payload[1];
+                    if (Math.round(event.payload[1] * 100) === 10000) file.complete = true;
+                    // unsubscribe = speed.subscribe(s => {
+                    //     console.log(s);
+                    //     file.progress =  Math.round(s * 100) / 100;
+                    // $currentTemplate = $currentTemplate;
+                    // });
+                    return cur;
+                }
             }
-            console.log(`Message:`, res);
-        }).catch((e) => {
-            createPop(e, 5000);
-            console.log(e);
-        }
-    )
-}
+            return cur;
+        })
 
-export function createPop(msg, duration=3000) {
-    const pop = new Pop({
-        target: document.querySelector('#alerts'),
-        intro: true,
-        props: {
-            msg: msg
-        }
+        // unsubscribe();
+        // currentTemplate.update(c=>c);
+
+        // console.log($currentTemplate['files']);
     });
-    setTimeout(()=>outroAndDestroy(pop), duration );
 }
-
-// Workaround for https://github.com/sveltejs/svelte/issues/4056
-const outroAndDestroy = (instance) => {
-    if (instance.$$.fragment && instance.$$.fragment.o) {
-        group_outros();
-        transition_out(instance.$$.fragment, 0, 0, () => {
-            instance.$destroy();
-        });
-        check_outros();
-    } else {
-        instance.$destroy();
-    }
-};

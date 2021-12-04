@@ -4,9 +4,20 @@
     import { slide, fade, draw } from 'svelte/transition';
     import {quintOut} from "svelte/easing";
     import {open} from "@tauri-apps/api/dialog";
-    // const dispatch = createEventDispatcher();
+    import {listen} from "@tauri-apps/api/event";
+    import {getContext, onDestroy, setContext} from "svelte";
+    // const dispatch = createEventDispatcher(); "" | "" | ""
+
 
     let draggedOver = false;
+    // $: draggedOver = getContext("hover");
+    console.log("1", getContext("hover"));
+    const unsubscribe = getContext("hover")?.subscribe(value => {
+        console.log("???????");
+        draggedOver = value;
+    });
+
+    onDestroy(unsubscribe);
     // use to check if a file is being dragged
     const hasFiles = ({ dataTransfer: { types = [] } }) =>
         types.indexOf("Files") > -1;
@@ -47,7 +58,7 @@
 </script>
 
 
-<div class="relative flex items-center justify-center w-full"
+<div class="bg-white rounded-lg relative flex items-center justify-center w-full"
      on:drop|preventDefault="{dropHandler}" on:dragover="{dragOverHandler}" on:dragleave="{dragLeaveHandler}" on:dragenter|preventDefault="{dragEnterHandler}">
     {#if (draggedOver)}
         <div id="overlay" class="draggedover w-full h-full absolute top-0 left-0 pointer-events-none z-50 flex flex-col items-center justify-center rounded-md">

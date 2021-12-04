@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+use std::iter::Map;
 use serde::{Serialize, Deserialize};
+use crate::video::Studio;
 
 pub mod error;
 pub mod video;
@@ -12,4 +15,10 @@ pub struct User {
 pub struct Account {
     pub username: String,
     pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Config {
+    pub user: User,
+    pub streamers: HashMap<String, Studio>,
 }

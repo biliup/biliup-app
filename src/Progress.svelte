@@ -1,11 +1,14 @@
 <script>
-    import { draw } from 'svelte/transition';
-    import { quintOut } from 'svelte/easing';
     import {tweened} from "svelte/motion";
+    import {emit} from "@tauri-apps/api/event";
+    import {getCurrent} from "@tauri-apps/api/window";
+    import {currentTemplate} from "./store";
+
     export let complete;
     export let progress = 0;
     export let speed = 0;
     export let name;
+    export let fullname;
     const fitSpeed = tweened(null, {
         duration: 5000,
         // easing: cubicOut
@@ -14,29 +17,40 @@
         duration: 5000,
         // easing: cubicOut
     });
+
     $: {
         $fitSpeed = speed;
         $fitProgress = progress;
     }
+    const current = getCurrent();
+    function remove() {
+        emit(fullname).then(()=> {
+            $currentTemplate.files = $currentTemplate.files.filter(value => value.filename !== fullname);
+        });
+    }
 </script>
 <div class="flex items-center justify-center space-x-2 px-1">
-    <div class="flex-none w-12 items-center justify-center">
+    <div class="parent-svg flex-none w-12 items-center justify-center">
         <!--{#if complete}-->
         <!--    <svg xmlns="http://www.w3.org/2000/svg" class="m-auto h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">-->
         <!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />-->
         <!--    </svg>-->
         <!--{:else }-->
-            <svg xmlns="http://www.w3.org/2000/svg" class="m-auto h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path transition:draw stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="svg m-auto h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
+            <svg on:click={()=> remove()} xmlns="http://www.w3.org/2000/svg" class="del animate-bounce m-auto h-7 w-7" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+
         <!--{/if}-->
     </div>
     <div class="flex-grow w-0">
         <div class="flex">
-                    <span class="truncate font-mono w-full">
-                            {name}
-                        <span style="width: {$fitProgress}%;" class:complete={!complete} class="block max bg-yellow-300 border-yellow-300 border-opacity-60 border rounded-full"></span>
-                    </span>
+            <span class="truncate font-mono w-full">
+                    {name}
+                <span style="width: {$fitProgress}%;" class:complete={!complete} class="block max bg-yellow-300 border-yellow-300 border-opacity-60 border rounded-full"></span>
+            </span>
 
         </div>
         <!--                <div class="w-full h-4 bg-gray-400 rounded-full mt-3">-->
@@ -66,4 +80,16 @@
     .complete {
         @apply animate-pulse;
     }
+
+    .del {
+        display: none;
+    }
+
+    .parent-svg:hover > .del {
+        display: block;
+    }
+    .parent-svg:hover > .svg {
+        display: none;
+    }
+
 </style>

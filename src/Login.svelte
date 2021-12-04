@@ -1,31 +1,84 @@
 <script lang="ts">
-    import { isLogin, createPop } from './store.js';
+    import {isLogin, currentTemplate} from './store.js';
     import { scale, fade, blur } from 'svelte/transition';
     import { invoke } from '@tauri-apps/api/tauri';
+    import {WebviewWindow} from "@tauri-apps/api/window";
+    import {createPop} from "./common";
 
     let rememberMe: boolean = false;
     let username;
     let password;
-    // invoke('login_by_cookie', )
-    //     .then((res) => {
-    //         isLogin.set(true);
-    //         console.log(`Message: ${res}`)
-    //     }).catch((e) => console.log(e))
-    invoke('load_account', )
+    invoke('login_by_cookie', )
         .then((res) => {
-            username = res.account.username;
-            password = res.account.password;
-            rememberMe = true;
             isLogin.set(true);
+            console.log(`Message: ${res}`)
+        }).catch((e) => console.log(e))
+    invoke('load')
+        .then((res) => {
+            username = res.user.account.username;
+            password = res.user.account.password;
+            rememberMe = true;
+            // isLogin.set(true);
             console.log(res);
-        }).catch((e) => console.log(e, 5000))
+        }).catch((e) => {
+            let a = '未命名模板';
+            invoke('save', {config: {
+                    user: {
+                        account:{
+                            username: '',
+                            password: ''
+                        }
+                    },
+                    streamers: {
+                        ['未命名模板']: {
+                            title: '',
+                            copyright: 1,
+                            source: '',
+                            tid: 171,
+                            desc: '',
+                            dynamic: '',
+                            tag: '',
+                            cover: '',
+                            desc_format_id: 0,
+                            subtitle: {
+                                open: 0,
+                                lan: ''
+                            },
+                            videos: [],
+                            open_subtitle: false
+                        }
+                    }
+                }})
+                .then((res) => {
+                    console.log(res);
+                }).catch((e) => {
+                createPop(e, 5000);
+                console.log(e);
+            })
+            console.log(e);
+        }
+    )
+
     function login() {
         console.log(rememberMe);
         invoke('login', { username: username,password: password, rememberMe: rememberMe  })
             .then((res) => {
                     isLogin.set(true);
                     console.log(`Message: ${res}`)
-            }).catch((e) => createPop(e, 5000))
+            }).catch((e) => {
+                e = JSON.parse(e);
+            // {"code":0,"data":{"cookie_info":null,"message":
+            // "本次登录环境存在风险, 需使用手机号进行验证或绑定",
+            // "sso":null,"status":2,
+            // "token_info":null,
+            // "url":"https://passport.bilibili.com/account/mobile/security/managephone/phone/verify?tmp_token=&requestId=&source=risk"},
+            // "message":"0","ttl":1}
+            // const webview = new WebviewWindow('theUniqueLabel', {
+            //     url: e.data.url
+            // })
+            createPop(JSON.stringify(e), 5000);
+            console.log(e);
+        })
     }
 
 </script>
