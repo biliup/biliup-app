@@ -28,10 +28,12 @@ export function archivePre(node, combine) {
         onCreate(instance) {
 
             // @ts-ignore
-            partition = new Partition({target: instance.popper.firstChild.lastChild, props: {
+            partition = new Partition({
+                target: instance.popper.firstChild.lastChild, props: {
                     current: combine.current,
                     currentChildren: combine.currentChildren
-                }});
+                }
+            });
             off = partition.$on('tid', event => {
                 combine.callback(event.detail.tid, event.detail.parent, event.detail.children);
                 instance.hide();
@@ -70,7 +72,7 @@ export function archivePre(node, combine) {
 }
 
 
-export function createPop(msg, duration=3000, mode='Error') {
+export function createPop(msg, duration = 3000, mode = 'Error') {
     const pop = new Pop({
         target: document.querySelector('#alerts'),
         intro: true,
@@ -79,7 +81,7 @@ export function createPop(msg, duration=3000, mode='Error') {
             mode: mode
         }
     });
-    setTimeout(()=>outroAndDestroy(pop), duration );
+    setTimeout(() => outroAndDestroy(pop), duration);
 }
 
 // Workaround for https://github.com/sveltejs/svelte/issues/4056

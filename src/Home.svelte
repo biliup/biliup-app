@@ -1,13 +1,13 @@
 <script lang="ts">
     import Sidebar from './Sidebar.svelte';
     import Upload from './Upload.svelte';
-    import { fade } from 'svelte/transition';
-    import {template, currentTemplate, progress, isLogin, attach} from "./store";
+    import {attach, progress, template} from "./store";
     import {listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
     import {createPop} from "./common";
     import {setContext} from "svelte";
     import {writable} from "svelte/store";
+
     let map;
     let current;
     invoke('load')
@@ -53,7 +53,7 @@
         <!--{#key current}-->
         <!--    <Upload selected={current}/>-->
         <!--{/key}-->
-<!--            <svelte:component this={$currentTemplate['component']} selected={current}/>-->
+        <!--            <svelte:component this={$currentTemplate['component']} selected={current}/>-->
     </Sidebar>
     <div
             class="grid justify-center w-screen h-screen rhs overflow-y-auto overflow-x-hidden">

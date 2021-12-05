@@ -8,12 +8,14 @@ bilibili投稿客户端，理论上支持Windows，Linux，macOS。
 * 投稿线路对国外不友好，速度较慢稳定性较差
 * 不能批量选择文件，多p只能一个一个文件选择
 
+[下载地址](https://github.com/ForgQi/Caution/releases/download/v0.0.1/biliup.exe)
+
 ---
 ![login](biliup-img/login.png)
 ![main](biliup-img/main.png)
 
 ## Roadmap
-
+- [ ] 短信登录
 - [ ] 上传视频封面
 - [ ] 自由切换投稿线路
 - [ ] 设置投稿并发数

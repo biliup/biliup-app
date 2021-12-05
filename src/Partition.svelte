@@ -1,9 +1,7 @@
 <script context="module">
 </script>
 <script>
-    // import {invoke} from "@tauri-apps/api/tauri";
-    // import {createPop} from "./store";
-    import { createEventDispatcher } from 'svelte';
+    import {createEventDispatcher} from 'svelte';
     import {invoke} from "@tauri-apps/api/tauri";
     import {createPop, partition} from "./common";
 
@@ -18,7 +16,7 @@
     let currentTypelist = [];
     if ($partition === null) {
         $partition = [];
-        invoke('archive_pre', )
+        invoke('archive_pre',)
             .then((res) => {
                 $partition = res.data.typelist;
                 console.log('加载分区表', res);
@@ -29,7 +27,7 @@
     }
 
     $: {
-    //     console.log('!!', $partition);
+        //     console.log('!!', $partition);
         if (current) {
             currentTypelist = $partition.find(value => value.id === current).children;
         } else {
@@ -63,17 +61,19 @@
             <div class:selected="{current === tid.id}" on:click={(event)=>archive_pre(tid, event)}
                  class="py-2 pr-0 flex text-gray-600 justify-between items-center cursor-pointer hover:bg-gray-200 hover:text-gray-700">
                 <div class="ml-3.5 font-medium dark:text-gray-200 text-base">
-                        {tid.name}
+                    {tid.name}
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
             </div>
         {/each}
     </div>
     <div class="overflow-y-auto max-h-52 py-1.5">
         {#each currentTypelist as tid}
-            <div class:selected="{currentChildren === tid.id}" on:click={(event)=>archive_pre(tid, event)} class="p-2.5 cursor-pointer hover:bg-gray-200 hover:text-gray-700">
+            <div class:selected="{currentChildren === tid.id}" on:click={(event)=>archive_pre(tid, event)}
+                 class="p-2.5 cursor-pointer hover:bg-gray-200 hover:text-gray-700">
                 <span class="font-weight">{tid.name}</span>
                 <span class="ml-2.5 text-xs text-black text-opacity-50">{tid.desc}</span>
             </div>

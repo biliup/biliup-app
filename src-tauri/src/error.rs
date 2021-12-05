@@ -1,6 +1,6 @@
 use thiserror::Error;
 // use anyhow::Result;
-use serde::{Serialize, Deserialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -13,7 +13,7 @@ pub enum Error {
     #[error(transparent)]
     IO(#[from] std::io::Error),
     #[error(transparent)]
-    Other(#[from] anyhow::Error),  // source and Display delegate to anyhow::Error
+    Other(#[from] anyhow::Error), // source and Display delegate to anyhow::Error
 }
 
 // #[derive(Error, Debug, Serialize, Display)]
@@ -48,21 +48,22 @@ pub enum Error {
 
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
+    where
+        S: Serializer,
+    {
         match self {
             Error::IO(io) => serializer.serialize_str(&io.to_string()),
             Error::Other(other) => serializer.serialize_str(&other.to_string()),
             Error::ReqIO(e) => serializer.serialize_str(&e.to_string()),
             Error::YamlIO(e) => serializer.serialize_str(&e.to_string()),
-            Error::Err(e) => serializer.serialize_str(&e.to_string())
+            Error::Err(e) => serializer.serialize_str(&e.to_string()),
         }
     }
 }
-
 
 // #[derive(Error, Debug, Serialize)]
 // pub enum MyError {
 //   #[error(transparent)]
 //   Other(#[from] #[serde(skip)] reqwest::Error),  // source and Display delegate to anyhow::Error
 // }
-pub type Result<T, E=Error> = core::result::Result<T, E>;
+pub type Result<T, E = Error> = core::result::Result<T, E>;

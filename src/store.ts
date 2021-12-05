@@ -1,6 +1,4 @@
 import {writable} from "svelte/store";
-import Pop from "./Pop.svelte";
-import {check_outros, group_outros, transition_out} from "svelte/internal";
 import {open} from "@tauri-apps/api/dialog";
 import {sep} from "@tauri-apps/api/path";
 import {invoke} from "@tauri-apps/api/tauri";
@@ -25,8 +23,8 @@ export const currentTemplate = writable({
 });
 export const [send, receive] = crossfade({
     duration: 800,
-    fallback: (node, params)=> {
-        return fly(node,{ x: 200, delay: 500 });
+    fallback: (node, params) => {
+        return fly(node, {x: 200, delay: 500});
     },
 });
 export const fileselect = () => {
@@ -35,7 +33,8 @@ export const fileselect = () => {
         multiple: true,
         // directory: false,
         filters: [{
-            extensions: ['mp4','flv','avi','wmv','mov','webm','mpeg4','ts','mpg','rm','rmvb','mkv','m4v'], name: ""
+            extensions: ['mp4', 'flv', 'avi', 'wmv', 'mov', 'webm', 'mpeg4', 'ts', 'mpg', 'rm', 'rmvb', 'mkv', 'm4v'],
+            name: ""
         }]
     };
     open(properties).then((pathStr) => {
@@ -59,7 +58,7 @@ export function attach(files) {
             return temp['files'].find((existingFile) => existingFile.filename === file);
         }
 
-        for ( const file of  files) {
+        for (const file of files) {
             // file.type.match
             // if (!file.type.match("video.*")){
             //     createPop('请上传视频文件！');
@@ -71,10 +70,10 @@ export function attach(files) {
             }
             let split = file.split(sep);
 
-                // temp['files'] = [...temp['files'], ...event.target.files];
+            // temp['files'] = [...temp['files'], ...event.target.files];
             temp['files'].push({
                 filename: file,
-                name: split[split.length-1] ,
+                name: split[split.length - 1],
                 desc: '',
                 progress: 0,
                 speed: 0,
@@ -90,7 +89,7 @@ export function attach(files) {
     });
 }
 
-function allComplete(files, temp){
+function allComplete(files, temp) {
     // console.log(temp);
     for (const file of files) {
         if (!file.complete && !file.process && temp.atomicInt < 1) {
@@ -124,16 +123,13 @@ function upload(video, temp) {
         temp.atomicInt--;
         currentTemplate.update(t => t);
         if (allComplete(temp['files'], temp)) {
-                console.log("???");
-                return;
+            console.log("???");
+            return;
         }
     })
 }
 
 export async function progress() {
-    // console.log('?', $currentTemplate['files']);
-    // console.log($currentTemplate.destroy);
-    // if ($currentTemplate.destroy) return;
     return await listen('progress', event => {
         // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
         // event.payload is the payload object
@@ -147,20 +143,11 @@ export async function progress() {
                     // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
                     file.progress = event.payload[1];
                     if (Math.round(event.payload[1] * 100) === 10000) file.complete = true;
-                    // unsubscribe = speed.subscribe(s => {
-                    //     console.log(s);
-                    //     file.progress =  Math.round(s * 100) / 100;
-                    // $currentTemplate = $currentTemplate;
-                    // });
+
                     return cur;
                 }
             }
             return cur;
         })
-
-        // unsubscribe();
-        // currentTemplate.update(c=>c);
-
-        // console.log($currentTemplate['files']);
     });
 }

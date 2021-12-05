@@ -1,7 +1,7 @@
+use crate::video::Studio;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::iter::Map;
-use serde::{Serialize, Deserialize};
-use crate::video::Studio;
 
 pub mod error;
 pub mod video;
