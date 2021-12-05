@@ -6,7 +6,7 @@
 use std::cell::Cell;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use anyhow::{anyhow, bail};
+use anyhow::{anyhow, bail, Context};
 use app::error::Result;
 use app::{Account, Config, User};
 use app::video::{BiliBili, Client, LoginInfo, Studio, Video};
@@ -18,16 +18,17 @@ fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
   if remember_me {
     match load() {
       Ok(mut config) => {
-        let file = std::fs::File::open("config.yaml")?;
+        let file = std::fs::File::create("config.yaml").with_context(||0)?;
         config.user.account.username = username.into();
         config.user.account.password = password.into();
-        serde_yaml::to_writer(file, &config)?
+        serde_yaml::to_writer(file, &config).with_context(||1)?
       }
       Err(_) => {
-        let file = std::fs::File::create("config.yaml")?;
-        serde_yaml::to_writer(file, &User{
-          account: Account{ username: username.into(), password: password.into() }
-        })?
+        let file = std::fs::File::create("config.yaml").with_context(||2)?;
+        serde_yaml::to_writer(file, &Config{
+          user: User {account: Account{ username: username.into(), password: password.into() }},
+          streamers: Default::default()
+        }).with_context(||3)?
       }
     }
   }

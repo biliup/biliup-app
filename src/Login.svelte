@@ -66,7 +66,10 @@
                     isLogin.set(true);
                     console.log(`Message: ${res}`)
             }).catch((e) => {
-                e = JSON.parse(e);
+            createPop(e, 5000);
+            console.log(e);
+
+            // e = JSON.parse(e);
             // {"code":0,"data":{"cookie_info":null,"message":
             // "本次登录环境存在风险, 需使用手机号进行验证或绑定",
             // "sso":null,"status":2,
@@ -76,8 +79,7 @@
             // const webview = new WebviewWindow('theUniqueLabel', {
             //     url: e.data.url
             // })
-            createPop(JSON.stringify(e), 5000);
-            console.log(e);
+            // createPop(JSON.stringify(e), 5000);
         })
     }
 

@@ -21,6 +21,9 @@ use async_stream::try_stream;
 use md5::{Digest, Md5};
 use cookie::Cookie;
 use base64::{encode};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_retry::policies::ExponentialBackoff;
+use reqwest_retry::RetryTransientMiddleware;
 use url::form_urlencoded;
 // use std::borrow::Borrow;
 
@@ -72,14 +75,19 @@ impl Video {
 }
 
 pub struct BiliBili {
-    client: reqwest::Client,
+    client: ClientWithMiddleware,
     login_info: LoginInfo,
 }
 
 impl BiliBili {
     pub fn new((login, login_info): (Client, LoginInfo)) -> BiliBili {
+        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+        let client = ClientBuilder::new(login.client)
+            // Retry failed requests.
+            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+            .build();
         BiliBili{
-            client: login.client,
+            client,
             login_info
         }
     }

@@ -1,7 +1,7 @@
 <script lang="ts">
     import {template, currentTemplate, send, receive} from "./store.ts";
     import {fly, blur, scale, crossfade} from 'svelte/transition';
-
+    import { flip } from 'svelte/animate';
 
     export let current;
     let items = [];
@@ -45,9 +45,9 @@
 
     <div class="flex flex-col justify-between flex-1 mt-6">
         <nav>
-            {#each items as item}
+            {#each items as item(item)}
 
-                <a class:selected="{current === item}"
+                <a animate:flip="{{duration: 300}}" class:selected="{current === item}"
                    on:click="{() => select(item)}">
                     {#if ($template[item].changed)}
                         <span class="flex absolute h-1.5 w-1.5 top-0 right-0 flex">
@@ -61,7 +61,7 @@
                     {#if current !== item}
                     <div out:send={{key: item}}></div>
                     {/if}
-                    <span class="mx-4 font-medium truncate">{item}</span>
+                    <span class="ml-4 font-medium truncate">{item}</span>
                 </a>
 
             {/each}
@@ -81,7 +81,7 @@
         @apply text-gray-700 bg-gray-200;
     }
     nav > a {
-        @apply flex cursor-pointer items-center px-4 py-2 mt-1 text-gray-600 transition-colors duration-200 transform rounded-md hover:bg-gray-200 hover:text-gray-700;
+        @apply flex cursor-pointer items-center px-3 py-2 mt-1 text-gray-600 transition-colors duration-200 transform rounded-md hover:bg-gray-200 hover:text-gray-700;
     }
 
 </style>
