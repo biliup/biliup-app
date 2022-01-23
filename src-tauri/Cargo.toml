@@ -22,22 +22,8 @@ reqwest = { version = "0.11", features = ["json",] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
 thiserror = "1.0"
-async-std = "1.10.0"
-futures = "0.3.17"
-bytes = "1.1.0"
-typed-builder = "0.9.1"
-reqwest_cookie_store = "0.2.0"
-cookie_store = "0.15.0"
-rsa = "0.5.0"
-base64 = "0.13.0"
-md-5 = "0.9.1"
-rand = "0.8.4"
-async-stream = "0.3.2"
-cookie = "0.15.1"
-url = "2.2.2"
 serde_yaml = "0.8"
-reqwest-middleware = "0.1.1"
-reqwest-retry = "0.1.1"
+biliup = "0.1.0"
 
 [features]
 default = [ "custom-protocol" ]
