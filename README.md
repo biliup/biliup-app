@@ -1,5 +1,5 @@
 # Biliup
-基于TAURI: ` GUI: Svelte , 后端: Rust`
+[![Telegram](https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram)](https://t.me/+IkpIABHqy6U0ZTQ5)
 
 bilibili投稿客户端，理论上支持Windows，Linux，macOS。
 
@@ -12,9 +12,10 @@ bilibili投稿客户端，理论上支持Windows，Linux，macOS。
 [下载地址](https://github.com/ForgQi/Caution/releases)
 
 ---
-<!-- ![login](.github/resource/login.png) -->
+![login](.github/resource/login.png)
 ![main](.github/resource/main.png)
 
+基于TAURI: ` GUI: Svelte , 后端: Rust`
 ## Roadmap
 - [x] 短信登录, 二维码登录
 - [ ] 上传视频封面

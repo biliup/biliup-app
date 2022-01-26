@@ -1,6 +1,6 @@
 {
   "package": {
-    "productName": "tauri-app",
+    "productName": "biliup-app",
     "version": "0.1.0"
   },
   "build": {
