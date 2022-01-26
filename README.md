@@ -16,7 +16,7 @@ bilibili投稿客户端，理论上支持Windows，Linux，macOS。
 ![main](.github/resource/main.png)
 
 ## Roadmap
-- [ ] 短信登录
+- [x] 短信登录, 二维码登录
 - [ ] 上传视频封面
 - [ ] 自由切换投稿线路
 - [ ] 设置投稿并发数
