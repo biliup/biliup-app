@@ -1,18 +1,10 @@
 module.exports = {
+  content: ['./src/**/*.{html,js,svelte,ts}'],
   purge: [ "./src/**/*.svelte",
     // may also want to include HTML files
     "./src/**/*.html"],
-  darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
   },
-  variants: {
-    extend: {
-      backgroundColor: ["checked"],
-      borderColor: ["checked"],
-      inset: ["checked"],
-      zIndex: ["hover", "active"],
-    },
-  },
-  plugins: [],
+  plugins: [require('daisyui'),],
 }

@@ -16,8 +16,8 @@
     "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
-    "autoprefixer": "^10.3.7",
-    "postcss": "^8.3.9",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.5",
     "postcss-load-config": "^3.1.0",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
@@ -28,13 +28,15 @@
     "svelte-check": "^2.0.0",
     "svelte-dnd-action": "^0.9.12",
     "svelte-preprocess": "^4.9.8",
-    "tailwindcss": "^2.2.17",
+    "tailwindcss": "^3.0.16",
     "tslib": "^2.0.0",
     "typescript": "^4.0.0"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8",
+    "daisyui": "^1.25.4",
     "sirv-cli": "^1.0.0",
+    "svelte-qrcode": "^1.0.0",
     "tippy.js": "^6.3.7"
   }
 }

@@ -107,8 +107,11 @@
             }
             // console.log(typeList);
         }
-        tags = $currentTemplate.tag.length === 0 ? [] : $currentTemplate.tag.split(',');
+        // if ($currentTemplate != $template[oldSelected]) {
+            tags = $currentTemplate.tag.length === 0 ? [] : $currentTemplate.tag.split(',');
+        // }
     }
+
     let tempTag;
 
     function submit() {
@@ -206,21 +209,21 @@
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
             <div class="mb-3 flex justify-between items-center">
-                <div>
-                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
+<!--                <div>-->
+<!--                    <div class="relative inline-block w-10 mr-2 align-middle select-none">-->
                         <!--                        bind:checked={nocopyright}-->
-                        <input checked={nocopyright} class="checked:bg-blue-600  border-blue-200 outline-none focus:outline-none right-4 checked:right-0 duration-200 ease-in absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer " id="Orange"
+                        <input checked={nocopyright} class="toggle" id="Orange"
                                name="toggle" on:change={(event) => handleClick(event)}
                                type="checkbox"/>
-                        <label class="block overflow-hidden h-6 rounded-full bg-gray-100 cursor-pointer" for="Orange">
-                        </label>
-                    </div>
-                    <span class="w-auto text-sm text-gray-500 tracking-wide">
+<!--                        <label class="block overflow-hidden h-6 rounded-full bg-gray-100 cursor-pointer" for="Orange">-->
+<!--                        </label>-->
+<!--                    </div>-->
+                    <span class="mx-2 w-auto text-sm text-gray-500 tracking-wide">
                             是否转载
-                </span>
-                </div>
+                    </span>
+<!--                </div>-->
                 <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                    <input bind:value={$currentTemplate.source} class=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" id="rounded-email"
+                    <input bind:value={$currentTemplate.source} class="input input-bordered w-full" id="rounded-email"
                            placeholder="转载来源"
                            type="text"/>
                 </div>
@@ -245,7 +248,7 @@
                 </button>
                 <!--                <input bind:this={archivePre} bind:value={tid} type="text" class=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" placeholder="分区"/>-->
             </div>
-            <div class="flex flex-wrap rounded-lg border-transparent border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
+            <div class="flex flex-wrap rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
                 {#each tags as tag}
                     <span class="flex  ml-1 my-1.5 px-3 py-0.5 text-base rounded-full text-white  bg-indigo-500 ">
                         {tag}
@@ -264,16 +267,20 @@
                        type="text"/>
             </div>
             <div class="text-gray-700">
-                <label class="text-sm font-bold text-gray-500 tracking-wide">简介</label>
+                <label class="label">
+                    <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
+                </label>
                 <textarea bind:value={$currentTemplate.desc}
-                          class="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                          cols="40" placeholder="简介补充: ..." rows="5"></textarea>
+                          class="textarea textarea-bordered w-full"
+                          cols="40" placeholder="简介补充: ..." rows="4"></textarea>
             </div>
             <div class="text-gray-700">
-                <label class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</label>
+                <label class="label">
+                    <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
+                </label>
                 <textarea bind:value={$currentTemplate.dynamic}
-                          class="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                          cols="40" placeholder="动态描述" rows="5"></textarea>
+                          class="textarea textarea-bordered w-full"
+                          cols="40" placeholder="动态描述" rows="4"></textarea>
             </div>
             <button class="p-2 my-5 w-full flex justify-center bg-blue-500 text-gray-100 rounded-full tracking-wide
                           font-semibold  focus:outline-none focus:shadow-outline hover:bg-blue-600 shadow-lg cursor-pointer transition ease-in duration-300" on:click|preventDefault={submit} type="submit">

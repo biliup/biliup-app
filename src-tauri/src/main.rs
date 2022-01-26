@@ -59,6 +59,34 @@ async fn login_by_cookie() -> Result<String> {
 }
 
 #[tauri::command]
+async fn login_by_sms(code: u32, res: serde_json::Value) -> Result<String> {
+    Client::new().login_by_sms(code, res).await?;
+    // println!("body = {:?}", client);
+    Ok("登录成功".into())
+}
+
+#[tauri::command]
+async fn send_sms(country_code: u32, phone: u64) -> Result<serde_json::Value> {
+    let ret = Client::new().send_sms(phone, country_code).await?;
+    // println!("body = {:?}", client);
+    Ok(ret)
+}
+
+#[tauri::command]
+async fn login_by_qrcode(res: serde_json::Value) -> Result<String> {
+    Client::new().login_by_qrcode(res).await?;
+    // println!("body = {:?}", client);
+    Ok("登录成功".into())
+}
+
+#[tauri::command]
+async fn get_qrcode() -> Result<serde_json::Value> {
+    let qrcode = Client::new().get_qrcode().await?;
+    // println!("body = {:?}", client);
+    Ok(qrcode)
+}
+
+#[tauri::command]
 async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
     let mut client = Client::new();
     let login_info = client
@@ -130,6 +158,15 @@ async fn archive_pre() -> Result<serde_json::Value> {
 }
 
 #[tauri::command]
+async fn get_myinfo() -> Result<serde_json::Value> {
+    let client = Client::new();
+    let _login_info = client
+        .login_by_cookies(std::fs::File::open("cookies.json")?)
+        .await?;
+    Ok(client.client.get("https://api.bilibili.com/x/space/myinfo").send().await?.json().await?)
+}
+
+#[tauri::command]
 fn load_account() -> Result<User> {
     let file = std::fs::File::open("config.yaml")?;
     let user: User = serde_yaml::from_reader(file)?;
@@ -169,7 +206,12 @@ fn main() {
             submit,
             archive_pre,
             load,
-            save
+            save,
+            login_by_sms,
+            send_sms,
+            login_by_qrcode,
+            get_qrcode,
+            get_myinfo
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

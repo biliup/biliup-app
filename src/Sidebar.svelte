@@ -2,8 +2,34 @@
     import {currentTemplate, send, template} from "./store.ts";
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
+    import {invoke} from "@tauri-apps/api/tauri";
+    import {fetch, ResponseType} from "@tauri-apps/api/http";
 
     export let current;
+    let face = 'noface.jpg';
+    let name = null;
+    invoke('get_myinfo').then((ret) => {
+        console.log(ret);
+        console.log(ret['data']['face']);
+        fetch(<string>ret['data']['face'], {method: "GET", responseType: ResponseType.Binary}).then((res)=>{
+            face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
+        })
+        name = ret['data']['name'];
+    });
+
+    function arrayBufferToBase64(buffer){
+        var binary = '';
+        var bytes = new Uint8Array(buffer);
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            //将 Unicode 编码转换为一个字符串:
+            //fromCharCode() 可接受一个指定的 Unicode 值，然后返回一个字符串。
+            binary += String.fromCharCode(bytes[i]);
+        }
+        //window.btoa()：将ascii字符串或二进制数据转换成一个base64编码过的字符串,该方法不能直接作用于Unicode字符串.
+        return window.btoa(binary);
+    }
+
     let items = [];
     $: items = [...Object.keys($template)];
 
@@ -44,7 +70,10 @@
 </script>
 <div class="flex flex-col w-72 h-screen px-4 py-8 bg-white border-r dark:bg-gray-800 dark:border-gray-600 overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
-    <h2 class="text-3xl font-semibold text-gray-800 dark:text-white">模板</h2>
+    <div class="flex items-center px-3 -mx-2">
+        <img class="object-cover rounded-full h-9 w-9" src="{face}" alt="avatar"/>
+        <h4 class="mx-2 font-medium text-gray-800 dark:text-gray-200 hover:underline truncate">{name}</h4>
+    </div>
 
     <div class="flex flex-col justify-between flex-1 mt-6">
         <nav>
