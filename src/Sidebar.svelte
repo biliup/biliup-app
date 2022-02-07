@@ -4,6 +4,8 @@
     import {flip} from 'svelte/animate';
     import {invoke} from "@tauri-apps/api/tauri";
     import {fetch, ResponseType} from "@tauri-apps/api/http";
+    import {open} from "@tauri-apps/api/shell";
+    import {configDir} from "@tauri-apps/api/path";
 
     export let current;
     let face = 'noface.jpg';
@@ -41,8 +43,9 @@
         if ($template[current]) $currentTemplate = $template[current];
     }
 
-    function add() {
-        $template['未命名模板' + Object.keys($template).length] = {
+    async function add() {
+        let name = '未命名模板' + Object.keys($template).length;
+        $template[name] = {
             title: '',
             files: [],
             copyright: 1,
@@ -58,8 +61,13 @@
                 lan: ''
             },
             videos: [],
-            open_subtitle: false
+            open_subtitle: false,
+            atomicInt: 0
         };
+        // $currentTemplate = $template[name];
+        let res = await invoke('load');
+        res.streamers = $template;
+        await invoke('save', {config: res});
     }
 
     function select(item) {
@@ -67,12 +75,71 @@
         console.log('???', $template);
         current = item;
     }
+
+    async function openConfigDir(){
+        await open(await configDir()+'biliup');
+    }
+    let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo'];
+    let line = 'auto';
+    let limit = 3;
+
+    async function loadSettings() {
+        let ret = await invoke('load');
+        console.log(ret);
+        if (ret.line === null) {
+            line = 'auto';
+        } else {
+            line = ret.line;
+        }
+        limit = <number>ret['limit'];
+    }
+
+    async function saveSettings() {
+        let ret = await invoke('load');
+        console.log(ret);
+        if (line === 'auto') {
+            ret.line = null;
+        } else {
+            ret.line = line;
+        }
+        ret.limit = limit;
+        await invoke('save', {config: ret});
+    }
 </script>
 <div class="flex flex-col w-72 h-screen px-4 py-8 bg-white border-r dark:bg-gray-800 dark:border-gray-600 overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
     <div class="flex items-center px-3 -mx-2">
         <img class="object-cover rounded-full h-9 w-9" src="{face}" alt="avatar"/>
-        <h4 class="mx-2 font-medium text-gray-800 dark:text-gray-200 hover:underline truncate">{name}</h4>
+        <div data-tip="打开配置文件夹" class="tooltip">
+            <h4 on:click={openConfigDir} class="mx-2 font-medium text-gray-800 dark:text-gray-200 hover:underline truncate">{name}</h4>
+        </div>
+
+        <label for="my-modal-2" data-tip="设置" class="cursor-pointer tooltip" on:click={loadSettings}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+            </svg>
+        </label>
+        <input type="checkbox" id="my-modal-2" class="modal-toggle">
+        <div class="modal">
+            <div class="modal-box">
+                <div class="space-y-2.5">
+                    <h4>单视频并发数：{limit}</h4>
+                    <input type="range" max="128" min="1" bind:value={limit} class="range">
+<!--                    <button class="btn btn-outline">线路: AUTO</button>-->
+                    <h4>上传线路选择：</h4>
+                    <div class="btn-group">
+                        {#each lines as l}
+                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline">
+                        {/each}
+                    </div>
+                </div>
+
+                <div class="modal-action">
+                    <label for="my-modal-2" on:click={saveSettings} class="btn btn-accent">Save</label>
+                    <label for="my-modal-2" class="btn">Close</label>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="flex flex-col justify-between flex-1 mt-6">

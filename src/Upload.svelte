@@ -57,11 +57,9 @@
         $currentTemplate.tag = tags.join(',');
         invoke('load',)
             .then((res) => {
+                res.streamers = $template;
                 invoke('save', {
-                    config: {
-                        user: res.user,
-                        streamers: $template,
-                    }
+                    config: res
                 })
                     .then((res) => {
                         console.log(res,);
@@ -120,7 +118,7 @@
         invoke('submit', {
             studio: {
                 ...$currentTemplate,
-                tag: ['biliup', ...tags].join(',')
+                tag: tags.join(',')
             }
         })
             .then((res) => {
@@ -284,7 +282,7 @@
             </div>
             <button class="p-2 my-5 w-full flex justify-center bg-blue-500 text-gray-100 rounded-full tracking-wide
                           font-semibold  focus:outline-none focus:shadow-outline hover:bg-blue-600 shadow-lg cursor-pointer transition ease-in duration-300" on:click|preventDefault={submit} type="submit">
-                Upload
+                提交视频
             </button>
         </div>
     </div>

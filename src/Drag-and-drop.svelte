@@ -8,7 +8,6 @@
     // $: draggedOver = getContext("hover");
     console.log("1", getContext("hover"));
     const unsubscribe = getContext("hover")?.subscribe(value => {
-        console.log("???????");
         draggedOver = value;
     });
 

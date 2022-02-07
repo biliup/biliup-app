@@ -73,10 +73,11 @@ export function attach(files) {
             // temp['files'] = [...temp['files'], ...event.target.files];
             temp['files'].push({
                 filename: file,
-                name: split[split.length - 1],
+                title: split[split.length - 1],
                 desc: '',
                 progress: 0,
                 speed: 0,
+                totalSize: 0,
                 complete: false,
                 process: false,
             });
@@ -107,7 +108,7 @@ function upload(video, temp) {
     // const files = [];
 
     invoke('upload', {
-        video: video,
+        video: video
     }).then((res) => {
         // temp.atomicInt--;
         video.filename = res[0].filename;
@@ -139,10 +140,11 @@ export async function progress() {
                 if (file.filename === event.payload[0]) {
                     // file.progress = Math.round(event.payload[1] * 100) / 100;
                     // $speed = Math.round(event.payload[1] * 100) / 100;
-                    file.speed = event.payload[2];
+                    file.totalSize = event.payload[2]
+                    file.speed = event.payload[3];
                     // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
-                    file.progress = event.payload[1];
-                    if (Math.round(event.payload[1] * 100) === 10000) file.complete = true;
+                    file.progress = event.payload[1] / file.totalSize * 100;
+                    if (Math.round(file.progress * 100) === 10000) file.complete = true;
 
                     return cur;
                 }

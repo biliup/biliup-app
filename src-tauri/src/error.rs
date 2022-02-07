@@ -11,6 +11,8 @@ pub enum Error {
     #[error(transparent)]
     YamlIO(#[from] serde_yaml::Error),
     #[error(transparent)]
+    JsonIO(#[from] serde_json::Error),
+    #[error(transparent)]
     IO(#[from] std::io::Error),
     #[error(transparent)]
     Other(#[from] anyhow::Error), // source and Display delegate to anyhow::Error
@@ -52,11 +54,12 @@ impl Serialize for Error {
         S: Serializer,
     {
         match self {
-            Error::IO(io) => serializer.serialize_str(&io.to_string()),
+            Error::IO(io) => serializer.serialize_str( &io.to_string()),
             Error::Other(other) => serializer.serialize_str(&other.to_string()),
             Error::ReqIO(e) => serializer.serialize_str(&e.to_string()),
             Error::YamlIO(e) => serializer.serialize_str(&e.to_string()),
             Error::Err(e) => serializer.serialize_str(&e.to_string()),
+            Error::JsonIO(e) => serializer.serialize_str(&e.to_string()),
         }
     }
 }

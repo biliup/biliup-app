@@ -4,6 +4,7 @@
     import {invoke} from '@tauri-apps/api/tauri';
     import {createPop} from "./common";
     import QrCode from "svelte-qrcode";
+    import {open} from "@tauri-apps/api/shell";
 
     let rememberMe: boolean = false;
     let username;
@@ -21,7 +22,7 @@
         .then((res) => {
             isLogin.set(true);
             console.log(`Message: ${res}`)
-        }).catch((e) => createPop(e, 5000))
+        }).catch((e) => createPop(e, 5000));
     invoke('load')
         .then((res) => {
             username = res.user.account.username;
@@ -115,6 +116,16 @@
         })
     }
 
+    async function browser() {
+        let ret = await invoke('get_qrcode');
+        console.log(<string>ret["data"]["url"]);
+        await open(<string>ret["data"]["url"]);
+        await invoke('login_by_qrcode', {res: ret})
+        let res = await invoke('login_by_cookie',);
+        isLogin.set(true);
+        console.log(`Message: ${res}`);
+    }
+
     function login() {
         console.log(rememberMe);
         invoke('login', {username: username, password: password, rememberMe: rememberMe})
@@ -146,12 +157,17 @@
         <div class="relative w-full rounded-3xl px-10 py-5 bg-zinc-50 shadow-md">
 
             {#if loginMethod === "password"}
-                <form class="mt-4">
-                    <div>
-                        <label class="block text-sm text-gray-800 dark:text-gray-200" for="username">用户名</label>
-                        <input bind:value={username} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
+                <div class="indicator w-full -mx-10">
+                    <button class="indicator-item link flex text-sm" on:click={browser}>浏览器登录
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </button>
+                </div>
+                <form>
+                    <label class="block text-sm text-gray-800 dark:text-gray-200">用户名</label>
+                    <input bind:value={username} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
                                type="text">
-                    </div>
 
                     <div class="mt-4">
                         <div class="flex items-center justify-between">
