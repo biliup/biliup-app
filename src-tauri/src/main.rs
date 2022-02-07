@@ -6,8 +6,8 @@
 use anyhow::{anyhow, bail, Context};
 use app::error::Result;
 // use app::video::{BiliBili, Client, LoginInfo, Studio, Video};
-// use app::{Account, Config, User};
-use biliup::{line, Config, User, Account};
+use app::{config_file, cookie_file, login_by_cookies};
+use biliup::{Account, Config, line, User};
 use std::cell::Cell;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -16,33 +16,35 @@ use std::time::Instant;
 use biliup::client::{Client, LoginInfo};
 use biliup::video::{BiliBili, Studio, Video};
 use tauri::{Manager, Window};
+use app::error;
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
-    login_by_password(username, password)?;
+    app::login_by_password(username, password)?;
     if remember_me {
         match load() {
             Ok(mut config) => {
-                let file = std::fs::File::create("config.yaml").with_context(|| 0)?;
-                config.user.account.username = username.into();
-                config.user.account.password = password.into();
-                serde_yaml::to_writer(file, &config).with_context(|| 1)?
+                if let Some(ref mut user) = config.user {
+                    user.account.username = username.into();
+                    user.account.password = password.into();
+                }
+                save(config)?;
+                // let file = std::fs::File::create(config_file()?).with_context(|| "open config.yaml")?;
+                // serde_yaml::to_writer(file, &config).with_context(|| "write config.yaml")?
             }
             Err(_) => {
-                let file = std::fs::File::create("config.yaml").with_context(|| 2)?;
-                serde_yaml::to_writer(
-                    file,
-                    &Config {
-                        user: User {
-                            account: Account {
-                                username: username.into(),
-                                password: password.into(),
-                            },
+                // let file = std::fs::File::create("config.yaml").with_context(|| "create config.yaml")?;
+                save(Config {
+                    user: Some(User {
+                        account: Account {
+                            username: username.into(),
+                            password: password.into(),
                         },
-                        streamers: Default::default(),
-                    },
-                )
-                .with_context(|| 3)?
+                    }),
+                    line: None,
+                    limit: 3,
+                    streamers: Default::default(),
+                })?;
             }
         }
     }
@@ -52,16 +54,17 @@ fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
 
 #[tauri::command]
 async fn login_by_cookie() -> Result<String> {
-    let file = std::fs::File::open("cookies.json")?;
-    Client::new().login_by_cookies(file).await?;
+    login_by_cookies().await?;
     // println!("body = {:?}", client);
     Ok("登录成功".into())
 }
 
 #[tauri::command]
 async fn login_by_sms(code: u32, res: serde_json::Value) -> Result<String> {
-    Client::new().login_by_sms(code, res).await?;
-    // println!("body = {:?}", client);
+    let info = Client::new().login_by_sms(code, res).await?;
+    let file = std::fs::File::create(cookie_file()?)?;
+    serde_json::to_writer_pretty(&file, &info)?;
+    println!("短信登录成功，数据保存在{:?}", file);
     Ok("登录成功".into())
 }
 
@@ -74,8 +77,10 @@ async fn send_sms(country_code: u32, phone: u64) -> Result<serde_json::Value> {
 
 #[tauri::command]
 async fn login_by_qrcode(res: serde_json::Value) -> Result<String> {
-    Client::new().login_by_qrcode(res).await?;
-    // println!("body = {:?}", client);
+    let info = Client::new().login_by_qrcode(res).await?;
+    let file = std::fs::File::create(cookie_file()?)?;
+    serde_json::to_writer_pretty(&file, &info)?;
+    println!("链接登录成功，数据保存在{:?}", file);
     Ok("登录成功".into())
 }
 
@@ -88,15 +93,21 @@ async fn get_qrcode() -> Result<serde_json::Value> {
 
 #[tauri::command]
 async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
-    let mut client = Client::new();
-    let login_info = client
-        .login_by_cookies(std::fs::File::open("cookies.json")?)
-        .await?;
-    // let bili = BiliBili::new(login_info, client);
-    // let videos = &self.studio.videos;
-    // let mut new_videos = Vec::with_capacity(videos.len());
-    // if studio.videos.is_empty() { return Err(app::error::Error::Err("文件不能为空".into())) }
-    // for video in &mut studio.videos {
+    let (_, client) = login_by_cookies().await?;
+
+    let config = load()?;
+    let probe = if let Some(line) = config.line {
+      match line.as_str() {
+          "kodo" => line::kodo(),
+          "bda2" => line::bda2(),
+          "ws" => line::ws(),
+          "qn" => line::qn(),
+          _ => unreachable!()
+      }
+    } else {
+        line::Probe::probe().await?
+    };
+    let limit = config.limit;
     let remove = Arc::new(AtomicBool::new(true));
     let is_remove = Arc::clone(&remove);
     let id = window.once(&video.filename, move |event| {
@@ -105,19 +116,20 @@ async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
     });
     let mut uploaded = 0;
     let mut speed = 0.;
-    let probe = line::Probe::probe().await?;
+
     let filename = video.filename;
     let filepath = PathBuf::from(&filename);
     let parcel = probe.to_uploader(&filepath).await?;
     let total_size = parcel.total_size;
     let instant = Instant::now();
-    video = parcel.upload(&client, |len| {
+    video = parcel.upload(&client, limit,|len| {
         window
             .emit(
                 "progress",
                 (
                     &filename,
-                    uploaded as f64 / total_size as f64 * 100.,
+                    uploaded,
+                    total_size,
                     uploaded as f64 / 1000. / instant.elapsed().as_millis() as f64,
                 ),
             )
@@ -137,10 +149,8 @@ async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
 }
 
 #[tauri::command]
-async fn submit(studio: Studio) -> Result<serde_json::Value> {
-    let login_info = Client::new()
-        .login_by_cookies(std::fs::File::open("cookies.json")?)
-        .await?;
+async fn submit(mut studio: Studio) -> Result<serde_json::Value> {
+    let (login_info, _) = login_by_cookies().await?;
     let ret = studio.submit(&login_info).await?;
     // let bili = BiliBili::new((client, login_info));
     // let mut bilibili = bili.submit(studio).await?;
@@ -149,51 +159,40 @@ async fn submit(studio: Studio) -> Result<serde_json::Value> {
 
 #[tauri::command]
 async fn archive_pre() -> Result<serde_json::Value> {
-    let client = Client::new();
-    let login_info = client
-        .login_by_cookies(std::fs::File::open("cookies.json")?)
-        .await?;
-    let bili = BiliBili::new(login_info, client).await;
+    let (login_info, client) = login_by_cookies().await?;
+    let bili = BiliBili::new(&login_info, &client);
     Ok(bili.archive_pre().await?)
 }
 
 #[tauri::command]
 async fn get_myinfo() -> Result<serde_json::Value> {
-    let client = Client::new();
-    let _login_info = client
-        .login_by_cookies(std::fs::File::open("cookies.json")?)
-        .await?;
+    let (_, client) = login_by_cookies().await?;
     Ok(client.client.get("https://api.bilibili.com/x/space/myinfo").send().await?.json().await?)
 }
 
 #[tauri::command]
 fn load_account() -> Result<User> {
-    let file = std::fs::File::open("config.yaml")?;
-    let user: User = serde_yaml::from_reader(file)?;
+    // let file = std::fs::File::open("config.yaml")?;
+    // let user: User = serde_yaml::from_reader(file)?;
     // println!("body = {:?}", client);
-    Ok(user)
+    Ok(load()?.user.ok_or(error::Error::Err("账号信息不存在".into()))?)
 }
 
 #[tauri::command]
-fn load() -> Result<Config> {
-    let file = std::fs::File::open("config.yaml")?;
-    let config: Config = serde_yaml::from_reader(file)?;
-    // println!("body = {:?}", client);
-    Ok(config)
-}
-
-#[tauri::command]
-fn save(config: Config) -> Result<Config> {
-    let file = std::fs::File::create("config.yaml")?;
+fn save(config: Config) ->Result<Config> {
+    let file = std::fs::File::create(config_file()?)?;
     // let config: Config = serde_yaml::from_reader(file)?;
     serde_yaml::to_writer(file, &config);
     // println!("body = {:?}", client);
     Ok(config)
 }
 
-#[tokio::main]
-async fn login_by_password(username: &str, password: &str) -> anyhow::Result<LoginInfo> {
-    Client::new().login_by_password(username, password).await
+#[tauri::command]
+fn load() -> Result<Config> {
+    let file = std::fs::File::open(config_file()?).with_context(||"biliup/config.yaml")?;
+    let config: Config = serde_yaml::from_reader(file)?;
+    // println!("body = {:?}", client);
+    Ok(config)
 }
 
 fn main() {

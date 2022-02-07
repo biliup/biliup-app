@@ -6,8 +6,9 @@
 
     export let complete;
     export let progress = 0;
+    export let totalSize = 0;
     export let speed = 0;
-    export let name;
+    export let title;
     export let fullname;
     const fitSpeed = tweened(null, {
         duration: 5000,
@@ -53,8 +54,12 @@
     </div>
     <div class="flex-grow w-0">
         <div class="flex">
-            <span class="truncate font-mono w-full">
-                    {name}
+            <span class="font-mono w-full">
+                <div class="flex w-full justify-between">
+                    <input bind:value="{title}" class="w-full truncate"/>
+                    <!--{title}-->
+                    <div class="text-gray-500 min-w-fit text-sm">{(totalSize/1024/1024).toFixed(2)} MiB</div>
+                </div>
                 <span class="block max bg-yellow-300 border-yellow-300 border-opacity-60 border rounded-full" class:complete={!complete}
                       style="width: {$fitProgress}%;"></span>
             </span>

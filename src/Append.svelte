@@ -59,8 +59,9 @@
              on:finalize="{handleDndFinalize}" class="flex flex-col rounded-lg">
             {#each $currentTemplate.files as file(file.filename)}
                 <div class="shadow-sm rounded-lg" animate:flip="{{duration: flipDurationMs}}">
-                    <Progress fullname={file.filename} name={file.name} complete={file.complete}
-                              progress={file.progress} speed={file.speed}/>
+                    <Progress fullname={file.filename} complete={file.complete} title={file.title}
+                              progress={file.progress} speed={file.speed} totalSize={file.totalSize}/>
+                    <!--{file.title}-->
                 </div>
             {/each}
         </div>
