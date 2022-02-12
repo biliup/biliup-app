@@ -1,16 +1,21 @@
 # biliup-app
 [![Telegram](https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram)](https://t.me/+IkpIABHqy6U0ZTQ5)
 
-bilibili投稿客户端，理论上支持Windows，Linux，macOS。
+bilibili投稿客户端，支持Windows，Linux，macOS。
 
 主要是为了解决现有网页端不能多p投稿的问题，虽然现有b站客户端可以多p
 但是有几个问题：
-* 不支持多平台，限制单视频大小4G以内
-* 投稿线路对国外不友好，速度较慢稳定性较差
-* 不能批量选择文件，多p只能一个一个文件选择
+* 仅支持Windows，不支持Linux，macOS
+* 不能批量选择文件，多p只能多次单选文件
+* 投稿线路对国外不友好，速度较慢稳定性较差，且不能自行切换
+* 不能调整单视频上传并发数，单视频限制大小4G以内
+* 仅能通过短信登录
 
 [下载地址](https://github.com/ForgQi/Caution/releases)
+### SEE ALSO
 
+* 自动录播投稿[工具](https://github.com/ForgQi/biliup)
+* 命令行投稿工具[CLI](https://github.com/ForgQi/biliup-rs)
 ---
 ![login](.github/resource/login.png)
 ![main](.github/resource/main.png)
