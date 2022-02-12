@@ -50,10 +50,9 @@
     },
     "allowlist": {
       "all": true,
-      "dialog": {
+      "http": {
         "all": true,
-        "open": true,
-        "save": true
+        "scope": ["http://i0.hdslb.com/*"]
       }
     },
     "windows": [

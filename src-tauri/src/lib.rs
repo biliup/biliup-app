@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use biliup::{Config, User};
 use anyhow::Context;
 use biliup::client::{Client, LoginInfo};
+use std::fmt::Write;
 
 
 pub mod error;
@@ -40,4 +41,19 @@ pub async fn login_by_cookies() -> anyhow::Result<(LoginInfo, Client)> {
         .login_by_cookies(std::fs::File::open(cookie_file()?)?)
         .await?;
     Ok((login_info, client))
+}
+
+pub fn encode_hex(bytes: &[u16]) -> String {
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for &b in bytes {
+        write!(&mut s, "{:x}", b).unwrap();
+    }
+    s
+}
+
+mod test {
+    #[test]
+    fn test_hex() {
+
+    }
 }

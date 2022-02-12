@@ -25,10 +25,18 @@
     }
     const current = getCurrent();
 
-    function remove() {
-        emit(fullname).then(() => {
-            $currentTemplate.files = $currentTemplate.files.filter(value => value.filename !== fullname);
-        });
+    function strToHexCharCode(str) {
+        if(str === "")
+            return "";
+        var hexCharCode = [];
+        for(var i = 0; i < str.length; i++) {
+            hexCharCode.push((str.charCodeAt(i)).toString(16));
+        }
+        return hexCharCode.join("");
+    }
+    async function remove() {
+        await emit(strToHexCharCode(fullname));
+        $currentTemplate.files = $currentTemplate.files.filter(value => value.filename !== fullname);
     }
 </script>
 <div class="flex items-center justify-center space-x-2 px-1">
@@ -43,7 +51,7 @@
             <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"
                   stroke-width="2"/>
         </svg>
-        <svg class="del animate-bounce m-auto h-7 w-7" fill="currentColor" on:click={()=> remove()}
+        <svg class="del animate-bounce m-auto h-7 w-7" fill="currentColor" on:click={remove}
              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path clip-rule="evenodd"
                   d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"

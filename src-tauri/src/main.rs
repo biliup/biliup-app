@@ -1,22 +1,24 @@
 #![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
+all(not(debug_assertions), target_os = "windows"),
+windows_subsystem = "windows"
 )]
 
-use anyhow::{anyhow, bail, Context};
-use app::error::Result;
-// use app::video::{BiliBili, Client, LoginInfo, Studio, Video};
-use app::{config_file, cookie_file, login_by_cookies};
-use biliup::{Account, Config, line, User};
 use std::cell::Cell;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
+
+use anyhow::{anyhow, bail, Context};
+use biliup::{Account, Config, line, User};
 use biliup::client::{Client, LoginInfo};
 use biliup::video::{BiliBili, Studio, Video};
 use tauri::{Manager, Window};
+
+// use app::video::{BiliBili, Client, LoginInfo, Studio, Video};
+use app::{config_file, cookie_file, encode_hex, login_by_cookies};
 use app::error;
+use app::error::Result;
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
@@ -91,26 +93,27 @@ async fn get_qrcode() -> Result<serde_json::Value> {
     Ok(qrcode)
 }
 
+
 #[tauri::command]
 async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
     let (_, client) = login_by_cookies().await?;
 
     let config = load()?;
     let probe = if let Some(line) = config.line {
-      match line.as_str() {
-          "kodo" => line::kodo(),
-          "bda2" => line::bda2(),
-          "ws" => line::ws(),
-          "qn" => line::qn(),
-          _ => unreachable!()
-      }
+        match line.as_str() {
+            "kodo" => line::kodo(),
+            "bda2" => line::bda2(),
+            "ws" => line::ws(),
+            "qn" => line::qn(),
+            _ => unreachable!()
+        }
     } else {
         line::Probe::probe().await?
     };
     let limit = config.limit;
     let remove = Arc::new(AtomicBool::new(true));
     let is_remove = Arc::clone(&remove);
-    let id = window.once(&video.filename, move |event| {
+    let id = window.once(encode_hex(video.filename.encode_utf16().collect::<Vec<u16>>().as_slice()), move |event| {
         println!("got window event-name with payload {:?}", event.payload());
         is_remove.store(false, Ordering::Relaxed);
     });
@@ -122,7 +125,7 @@ async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
     let parcel = probe.to_uploader(&filepath).await?;
     let total_size = parcel.total_size;
     let instant = Instant::now();
-    video = parcel.upload(&client, limit,|len| {
+    video = parcel.upload(&client, limit, |len| {
         window
             .emit(
                 "progress",
@@ -179,7 +182,7 @@ fn load_account() -> Result<User> {
 }
 
 #[tauri::command]
-fn save(config: Config) ->Result<Config> {
+fn save(config: Config) -> Result<Config> {
     let file = std::fs::File::create(config_file()?)?;
     // let config: Config = serde_yaml::from_reader(file)?;
     serde_yaml::to_writer(file, &config);
@@ -189,7 +192,7 @@ fn save(config: Config) ->Result<Config> {
 
 #[tauri::command]
 fn load() -> Result<Config> {
-    let file = std::fs::File::open(config_file()?).with_context(||"biliup/config.yaml")?;
+    let file = std::fs::File::open(config_file()?).with_context(|| "biliup/config.yaml")?;
     let config: Config = serde_yaml::from_reader(file)?;
     // println!("body = {:?}", client);
     Ok(config)
