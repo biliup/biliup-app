@@ -199,7 +199,6 @@ fn load() -> Result<Config> {
 }
 
 fn main() {
-    println!("cargo:rustc-env=MACOSX_DEPLOYMENT_TARGET=10.13");
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             login,
