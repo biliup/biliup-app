@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "biliup-app",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "build": {
     "distDir": "../public",
@@ -33,7 +33,7 @@
       },
       "macOS": {
         "frameworks": [],
-        "minimumSystemVersion": "",
+        "minimumSystemVersion": "10.13",
         "useBootstrapper": false,
         "exceptionDomain": "",
         "signingIdentity": null,
