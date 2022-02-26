@@ -114,13 +114,15 @@
 
     function submit() {
         $currentTemplate.videos = $currentTemplate?.files;
+        let dtime = null;
         if (isDtime) {
-            $currentTemplate['dtime'] = new Date(`${date} ${time}`).valueOf()/1000;
+            dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
         invoke('submit', {
             studio: {
                 ...$currentTemplate,
-                tag: tags.join(',')
+                tag: tags.join(','),
+                dtime: dtime,
             }
         })
             .then((res) => {
