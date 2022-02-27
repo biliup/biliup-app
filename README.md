@@ -15,6 +15,9 @@ bilibili投稿客户端，支持Windows，Linux，macOS。
 * 仅能通过短信登录
 
 [下载地址](https://github.com/ForgQi/Caution/releases)
+
+若 Windows 7 安装出错请先安装 [WebView2](https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/#download-section)
+后再重新安装
 ### SEE ALSO
 
 * 自动录播投稿[工具](https://github.com/ForgQi/biliup)

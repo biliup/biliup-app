@@ -114,11 +114,15 @@
 
     function submit() {
         $currentTemplate.videos = $currentTemplate?.files;
-
+        let dtime = null;
+        if (isDtime) {
+            dtime = new Date(`${date} ${time}`).valueOf()/1000;
+        }
         invoke('submit', {
             studio: {
                 ...$currentTemplate,
-                tag: tags.join(',')
+                tag: tags.join(','),
+                dtime: dtime,
             }
         })
             .then((res) => {
@@ -153,7 +157,10 @@
         parent = detailParent;
         children = detailChildren;
     }
-
+    let dtime;
+    let isDtime = false;
+    let date;
+    let time;
 </script>
 <div>
     <div class="shadow-md md:max-w-xl sm:max-w-sm lg:max-w-2xl w-screen px-10 pt-3 pb-10 mt-2 mb-2 bg-white rounded-xl"
@@ -280,6 +287,16 @@
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="动态描述" rows="4"></textarea>
             </div>
+            <div class="flex items-center">
+                <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
+                <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">开启定时发布</span>
+                {#if (isDtime)}
+                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="date" bind:value={date}/>
+                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="time" bind:value={time}/>
+                {/if}
+            </div>
+
+
             <button class="p-2 my-5 w-full flex justify-center bg-blue-500 text-gray-100 rounded-full tracking-wide
                           font-semibold  focus:outline-none focus:shadow-outline hover:bg-blue-600 shadow-lg cursor-pointer transition ease-in duration-300" on:click|preventDefault={submit} type="submit">
                 提交视频
