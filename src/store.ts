@@ -124,7 +124,7 @@ function upload(video, temp) {
         temp.atomicInt--;
         currentTemplate.update(t => t);
         if (allComplete(temp['files'], temp)) {
-            console.log("???");
+            console.log("allComplete");
             return;
         }
     })

@@ -1,7 +1,7 @@
 <script lang="ts">
     import Sidebar from './Sidebar.svelte';
     import Upload from './Upload.svelte';
-    import {attach, progress, template} from "./store";
+    import {attach, currentTemplate, progress, template} from "./store";
     import {listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
     import {createPop} from "./common";
@@ -60,7 +60,7 @@
         <div class="grid items-center justify-around min-h-screen">
             <!--        <Upload selected={current}/>-->
             {#key current}
-                <Upload selected={current}/>
+                <Upload selected={current} selectedTemplate="{$currentTemplate}"/>
             {/key}
             <!--        <slot {current}></slot>-->
         </div>

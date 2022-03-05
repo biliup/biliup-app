@@ -72,7 +72,6 @@
 
     function select(item) {
         // $currentTemplate = $template[item];
-        console.log('???', $template);
         current = item;
     }
 

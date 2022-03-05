@@ -2,14 +2,20 @@
     import {tweened} from "svelte/motion";
     import {emit} from "@tauri-apps/api/event";
     import {getCurrent} from "@tauri-apps/api/window";
-    import {currentTemplate} from "./store";
 
-    export let complete;
-    export let progress = 0;
-    export let totalSize = 0;
-    export let speed = 0;
-    export let title;
-    export let fullname;
+    export let selectedTemplate;
+    export let file;
+    let complete = file.complete;
+    let progress = 0;
+    let totalSize = 0;
+    let speed = 0;
+    $:  {
+        complete = file.complete;
+        totalSize = file.totalSize;
+        progress = file.progress;
+        speed = file.speed;
+    }
+    let fullname = file.filename;
     const fitSpeed = tweened(null, {
         duration: 5000,
         // easing: cubicOut
@@ -36,7 +42,7 @@
     }
     async function remove() {
         await emit(strToHexCharCode(fullname));
-        $currentTemplate.files = $currentTemplate.files.filter(value => value.filename !== fullname);
+        selectedTemplate.files = selectedTemplate.files.filter(value => value.filename !== fullname);
     }
 </script>
 <div class="flex items-center justify-center space-x-2 px-1">
@@ -64,7 +70,7 @@
         <div class="flex">
             <span class="font-mono w-full">
                 <div class="flex w-full justify-between">
-                    <input bind:value="{title}" class="w-full truncate"/>
+                    <input bind:value="{file.title}" class="w-full truncate"/>
                     <!--{title}-->
                     <div class="text-gray-500 min-w-fit text-sm">{(totalSize/1024/1024).toFixed(2)} MiB</div>
                 </div>

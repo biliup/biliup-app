@@ -1,18 +1,18 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {currentTemplate, receive, template} from './store.ts';
+    import {receive, template} from './store.ts';
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition} from "./common";
 
     export let selected;
+    export let selectedTemplate;
     let oldSelected = selected;
     // let title: string = ;
-    let nocopyright: boolean = $currentTemplate.copyright === 2;
-    $ : nocopyright = $currentTemplate.copyright === 2;
+    let nocopyright: boolean;
+    $ : nocopyright = selectedTemplate.copyright === 2;
 
     function handleClick(e) {
-        console.log(e.target.checked);
-        $currentTemplate.copyright = e.target.checked ? 2 : 1;
+        selectedTemplate.copyright = e.target.checked ? 2 : 1;
     }
 
     let edit = false;
@@ -22,71 +22,64 @@
             console.log(oldSelected);
             delete $template[oldSelected];
             oldSelected = selected
-            $currentTemplate.changed = true;
-            $template[selected] = $currentTemplate;
+            selectedTemplate.changed = true;
+            $template[selected] = selectedTemplate;
             console.log($template);
         }
         edit = e;
     }
 
-    function del() {
+    async function del() {
         delete $template[selected];
         $template = $template;
         console.log($template);
-        invoke('load',)
-            .then((res) => {
-                invoke('save', {
-                    config: {
-                        user: res.user,
-                        streamers: $template,
-                    }
-                })
-                    .then((res) => {
-                        console.log(res,);
-                        createPop('移除成功', 2000, 'Success');
-                    }).catch((e) => {
-                        createPop(e, 5000);
-                        console.log(e);
-                    }
-                )
-            }).catch((e) => console.log(e, 5000))
+        try {
+            let res = await invoke('load',)
+            res = await invoke('save', {
+                config: {
+                    user: res.user,
+                    streamers: $template,
+                }
+            })
+            createPop('移除成功', 2000, 'Success');
+        } catch (e) {
+            console.log(e);
+            createPop(e, 5000);
+        }
     }
 
-    function save() {
+    async function save() {
         // console.log({[selected]: config});
-        $currentTemplate.tag = tags.join(',');
-        invoke('load',)
-            .then((res) => {
-                res.streamers = $template;
-                invoke('save', {
-                    config: res
-                })
-                    .then((res) => {
-                        console.log(res,);
-                        $currentTemplate.changed = false;
-                        $template = $template;
-                        createPop('保存成功', 5000, 'Success');
-                    }).catch((e) => {
-                        createPop(e, 5000);
-                        console.log(e);
-                    }
-                )
-            }).catch((e) => console.log(e, 5000))
+        try {
+            let res = await invoke('load',)
+            res.streamers = $template;
+            res = await invoke('save', {
+                config: res
+            })
+            selectedTemplate.changed = false;
+            $template = $template;
+            createPop('保存成功', 5000, 'Success');
+        } catch (e) {
+            createPop(e, 5000);
+            console.log(e);
+        }
     }
 
     let tags = [];
+    $: tags = selectedTemplate.tag.length === 0 ? [] : selectedTemplate.tag.split(',');
+
     let parent = '请选择';
     let children = '分区';
     let current;
     let currentChildren;
-    $:  {
+    $: {
         if ($partition) {
             // tags.flatMap()
             // $partition.flatMap()
             let changed = false;
             for (const partitionElement of $partition) {
                 for (const child of partitionElement.children) {
-                    if (child.id === $currentTemplate.tid) {
+                    if (child.id === selectedTemplate.tid) {
                         parent = partitionElement.name;
                         children = child.name;
                         current = partitionElement.id;
@@ -105,27 +98,23 @@
             }
             // console.log(typeList);
         }
-        // if ($currentTemplate != $template[oldSelected]) {
-            tags = $currentTemplate.tag.length === 0 ? [] : $currentTemplate.tag.split(',');
-        // }
     }
 
     let tempTag;
 
     function submit() {
-        $currentTemplate.videos = $currentTemplate?.files;
+        selectedTemplate.videos = selectedTemplate?.files;
         let dtime = null;
         if (isDtime) {
             dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
         invoke('submit', {
             studio: {
-                ...$currentTemplate,
+                ...selectedTemplate,
                 tag: tags.join(','),
                 dtime: dtime,
             }
-        })
-            .then((res) => {
+        }).then((res) => {
                 console.log(res);
                 createPop('投稿成功', 5000, 'Success');
             }).catch((e) => {
@@ -142,6 +131,7 @@
             return;
         }
         tags = [...tags, tempTag];
+        selectedTemplate.tag = tags.join(',');
         tempTag = null;
         return false;
     }
@@ -153,7 +143,7 @@
 
 
     function callback(detailTid, detailParent, detailChildren) {
-        $currentTemplate?.tid = detailTid;
+        selectedTemplate.tid = detailTid;
         parent = detailParent;
         children = detailChildren;
     }
@@ -202,14 +192,12 @@
                             </svg>
                         </div>
                     {/if}
-
-
                 </label>
-                <input bind:value={$currentTemplate.title}
+                <input bind:value={selectedTemplate.title}
                        class="text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
                        placeholder="标题">
             </div>
-            <Append/>
+            <Append selectedTemplate="{selectedTemplate}"/>
             <p class="text-sm text-gray-300">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
@@ -228,7 +216,7 @@
                     </span>
 <!--                </div>-->
                 <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                    <input bind:value={$currentTemplate.source} class="input input-bordered w-full" id="rounded-email"
+                    <input bind:value={selectedTemplate.source} class="input input-bordered w-full" id="rounded-email"
                            placeholder="转载来源"
                            type="text"/>
                 </div>
@@ -275,7 +263,7 @@
                 <label class="label">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
                 </label>
-                <textarea bind:value={$currentTemplate.desc}
+                <textarea bind:value={selectedTemplate.desc}
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="简介补充: ..." rows="4"></textarea>
             </div>
@@ -283,7 +271,7 @@
                 <label class="label">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
                 </label>
-                <textarea bind:value={$currentTemplate.dynamic}
+                <textarea bind:value={selectedTemplate.dynamic}
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="动态描述" rows="4"></textarea>
             </div>
