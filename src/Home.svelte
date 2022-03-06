@@ -64,5 +64,4 @@
 <style global>
     @import 'filepond/dist/filepond.css';
     @import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
-    @import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
 </style>
