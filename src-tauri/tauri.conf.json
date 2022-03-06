@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "biliup-app",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "build": {
     "distDir": "../public",
@@ -52,7 +52,7 @@
       "all": true,
       "http": {
         "all": true,
-        "scope": ["http://i0.hdslb.com/*"]
+        "scope": ["http://i0.hdslb.com/*", "https://archive.biliimg.com/*"]
       }
     },
     "windows": [

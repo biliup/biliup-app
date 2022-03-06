@@ -1,7 +1,7 @@
 <script lang="ts">
     import Sidebar from './Sidebar.svelte';
     import Upload from './Upload.svelte';
-    import {attach, currentTemplate, progress, template} from "./store";
+    import {attach, progress, template, currentTemplate} from "./store";
     import {listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
     import {createPop} from "./common";
@@ -9,7 +9,6 @@
     import {writable} from "svelte/store";
 
     let map;
-    let current;
     invoke('load')
         .then((res) => {
             map = res.streamers;
@@ -18,15 +17,16 @@
                 map[streamersKey].atomicInt = 0;
             }
             $template = map;
-            current = Object.keys($template)[0];
+            let key = Object.keys($template)[0];
+            $currentTemplate.current = key;
+            $currentTemplate.selectedTemplate = $template[key];
             console.log(res);
         }).catch((e) => {
             createPop(e);
             console.log(e);
         }
     )
-    // map.set('未命名模板', {'title': '', 'files': [], 'atomicInt': 0, });
-    // map.set('未命名模板1', {'title': '', 'files': [], 'atomicInt': 0, });
+
     let fileHover = writable(false);
     setContext("hover", fileHover);
     progress();
@@ -49,21 +49,20 @@
 </script>
 
 <div class="flex items-start">
-    <Sidebar bind:current>
-        <!--{#key current}-->
-        <!--    <Upload selected={current}/>-->
-        <!--{/key}-->
-        <!--            <svelte:component this={$currentTemplate['component']} selected={current}/>-->
-    </Sidebar>
+    <Sidebar/>
     <div
             class="grid justify-center w-screen h-screen rhs overflow-y-auto overflow-x-hidden">
         <div class="grid items-center justify-around min-h-screen">
             <!--        <Upload selected={current}/>-->
-            {#key current}
-                <Upload selected={current} selectedTemplate="{$currentTemplate}"/>
+            {#key $currentTemplate.current}
+                <Upload selected={$currentTemplate.current} selectedTemplate="{$currentTemplate.selectedTemplate}"/>
             {/key}
             <!--        <slot {current}></slot>-->
         </div>
     </div>
 </div>
-
+<style global>
+    @import 'filepond/dist/filepond.css';
+    @import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+    @import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
+</style>

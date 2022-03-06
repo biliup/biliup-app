@@ -15,7 +15,7 @@
         progress = file.progress;
         speed = file.speed;
     }
-    let fullname = file.filename;
+    let id = file.id;
     const fitSpeed = tweened(null, {
         duration: 5000,
         // easing: cubicOut
@@ -41,8 +41,8 @@
         return hexCharCode.join("");
     }
     async function remove() {
-        await emit(strToHexCharCode(fullname));
-        selectedTemplate.files = selectedTemplate.files.filter(value => value.filename !== fullname);
+        await emit(strToHexCharCode(id));
+        selectedTemplate.files = selectedTemplate.files.filter(value => value.id !== id);
     }
 </script>
 <div class="flex items-center justify-center space-x-2 px-1">
@@ -68,7 +68,7 @@
     </div>
     <div class="flex-grow w-0">
         <div class="flex">
-            <span class="font-mono w-full">
+            <span class="w-full">
                 <div class="flex w-full justify-between">
                     <input bind:value="{file.title}" class="w-full truncate"/>
                     <!--{title}-->

@@ -29,7 +29,7 @@ bilibili投稿客户端，支持Windows，Linux，macOS。
 基于TAURI: ` GUI: Svelte , 后端: Rust`
 ## Roadmap
 - [x] 短信登录, 二维码登录
-- [ ] 上传视频封面
+- [x] 上传视频封面
 - [x] 自由切换投稿线路
 - [x] 设置投稿并发数
 - [ ] 多p按照文件名排序

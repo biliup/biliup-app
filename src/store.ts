@@ -9,18 +9,23 @@ import {createPop} from "./common";
 
 export const isLogin = writable(false);
 export const template = writable({});
+
 export const currentTemplate = writable({
-    title: '',
-    files: [],
-    copyright: 1,
-    source: "",
-    tid: 0,
-    desc: "",
-    dynamic: "",
-    tag: '',
-    videos: [],
-    changed: false
+    current: '',
+    selectedTemplate: {
+        title: '',
+        files: [],
+        copyright: 1,
+        source: "",
+        tid: 0,
+        desc: "",
+        dynamic: "",
+        tag: '',
+        videos: [],
+        changed: false
+    }
 });
+
 export const [send, receive] = crossfade({
     duration: 800,
     fallback: (node, params) => {
@@ -47,23 +52,10 @@ export const fileselect = () => {
 export function attach(files) {
     currentTemplate.update(temp => {
         function findFile(file) {
-            // return temp['files'].find(function(existingFile) {
-            //     return (
-            //         existingFile.name === file.name &&
-            //         existingFile.lastModified === file.lastModified &&
-            //         existingFile.size === file.size &&
-            //         existingFile.type === file.type
-            //     )
-            // });
-            return temp['files'].find((existingFile) => existingFile.filename === file);
+            return temp.selectedTemplate['files'].find((existingFile) => existingFile.id === file);
         }
 
         for (const file of files) {
-            // file.type.match
-            // if (!file.type.match("video.*")){
-            //     createPop('请上传视频文件！');
-            //     continue;
-            // }
             if (findFile(file)) {
                 createPop('请上传非重复视频！');
                 continue;
@@ -71,8 +63,9 @@ export function attach(files) {
             let split = file.split(sep);
 
             // temp['files'] = [...temp['files'], ...event.target.files];
-            temp['files'].push({
+            temp.selectedTemplate['files'].push({
                 filename: file,
+                id: file,
                 title: split[split.length - 1],
                 desc: '',
                 progress: 0,
@@ -84,7 +77,7 @@ export function attach(files) {
             // let objectURL = URL.createObjectURL(file);
             // console.log(objectURL);
         }
-        const res = allComplete(temp['files'], temp);
+        const res = allComplete(temp.selectedTemplate['files'], temp.selectedTemplate);
         console.log(res);
         return temp;
     });
@@ -115,14 +108,23 @@ function upload(video, temp) {
         video.speed = res[1];
         video.complete = true;
         video.progress = 100;
-
+        currentTemplate.update(t => {
+            t.selectedTemplate.files.forEach(file => {
+                if (file.id === video.id) {
+                    file.filename = res[0].filename;
+                    file.speed = res[1];
+                    file.complete = true;
+                    file.progress = 100;
+                }
+            })
+            return t;
+        });
         console.log(`Message:`, res);
     }).catch((e) => {
         createPop(e, 5000);
         console.log(e);
     }).finally(() => {
         temp.atomicInt--;
-        currentTemplate.update(t => t);
         if (allComplete(temp['files'], temp)) {
             console.log("allComplete");
             return;
@@ -136,8 +138,8 @@ export async function progress() {
         // event.payload is the payload object
         // console.log('!', event);
         currentTemplate.update((cur) => {
-            for (const file of cur['files']) {
-                if (file.filename === event.payload[0]) {
+            for (const file of cur.selectedTemplate['files']) {
+                if (file.id === event.payload[0]) {
                     // file.progress = Math.round(event.payload[1] * 100) / 100;
                     // $speed = Math.round(event.payload[1] * 100) / 100;
                     file.totalSize = event.payload[2]

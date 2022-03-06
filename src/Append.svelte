@@ -4,7 +4,6 @@
     import Progress from "./Progress.svelte";
     import DragAndDrop from './Drag-and-drop.svelte';
     import {dndzone} from "svelte-dnd-action";
-    import {onDestroy} from "svelte";
 
     export let selectedTemplate;
 
@@ -13,13 +12,12 @@
     function handleDndConsider(e) {
         // items = e.detail.items;
         selectedTemplate['files'] = e.detail.items;
-        console.log("1212", items)
     }
 
     function handleDndFinalize(e) {
         // items = e.detail.items;
         selectedTemplate['files'] = e.detail.items;
-        console.log(e.detail.items);
+        console.log('Finalize', e.detail.items);
     }
 
     let items = [];
@@ -60,9 +58,9 @@
         <!--{#await promise then value}-->
         <div use:dndzone="{{items: selectedTemplate.files, flipDurationMs}}" on:consider="{handleDndConsider}"
              on:finalize="{handleDndFinalize}" class="flex flex-col rounded-lg">
-            {#each selectedTemplate.files as file(file.filename)}
+            {#each selectedTemplate.files as file(file.id)}
                 <div class="shadow-sm rounded-lg" animate:flip="{{duration: flipDurationMs}}">
-                    <Progress file="{file}" selectedTemplate="{selectedTemplate}"/>
+                    <Progress file="{file}" bind:selectedTemplate="{selectedTemplate}"/>
                     <!--{file.title}-->
                 </div>
             {/each}
