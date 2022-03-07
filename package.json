@@ -17,7 +17,9 @@
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
     "autoprefixer": "^10.4.2",
+    "daisyui": "^2.2.2",
     "postcss": "^8.4.5",
+    "postcss-import": "^14.0.2",
     "postcss-load-config": "^3.1.0",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
@@ -35,7 +37,12 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-rc.0",
+    "filepond": "^4.30.3",
+    "filepond-plugin-file-validate-type": "^1.2.6",
+    "filepond-plugin-image-exif-orientation": "^1.0.11",
+    "filepond-plugin-image-preview": "^4.6.10",
     "sirv-cli": "^1.0.0",
+    "svelte-filepond": "^0.2.0",
     "svelte-qrcode": "^1.0.0",
     "tippy.js": "^6.3.7"
   }

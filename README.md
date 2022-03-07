@@ -4,7 +4,7 @@
 
 bilibili投稿客户端，支持Windows，Linux，macOS。
 
-文档地址：<https://forgqi.github.io/biliup-app>
+**文档地址**：<https://forgqi.github.io/biliup-app>
 
 主要是为了解决现有网页端不能多p投稿的问题，虽然现有b站客户端可以多p
 但是有几个问题：
@@ -29,7 +29,7 @@ bilibili投稿客户端，支持Windows，Linux，macOS。
 基于TAURI: ` GUI: Svelte , 后端: Rust`
 ## Roadmap
 - [x] 短信登录, 二维码登录
-- [ ] 上传视频封面
+- [x] 上传视频封面
 - [x] 自由切换投稿线路
 - [x] 设置投稿并发数
 - [ ] 多p按照文件名排序

@@ -2,9 +2,9 @@
 	import Login from './Login.svelte';
 	import Home from './Home.svelte';
 	import {isLogin} from './store.ts';
-	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
+	// import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 
-	overrideItemIdKeyNameBeforeInitialisingDndZones("filename");
+	// overrideItemIdKeyNameBeforeInitialisingDndZones("filename");
 
 </script>
 
@@ -17,7 +17,6 @@
     {/if}
     <div class="fixed space-y-2.5 inset-y-0 right-0 w-1/2 pointer-events-none" id="alerts"></div>
 </main>
-
 
 <style global lang="postcss">
     @tailwind base;

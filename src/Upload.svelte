@@ -1,18 +1,26 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {currentTemplate, receive, template} from './store.ts';
+    import {receive, template} from './store.ts';
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition} from "./common";
+    import FilePond, { registerPlugin, supported } from 'svelte-filepond';
+    import {flip} from 'svelte/animate';
+    // Import the Image EXIF Orientation and Image Preview plugins
+    // Note: These need to be installed separately
+    // `npm i filepond-plugin-image-preview filepond-plugin-image-exif-orientation --save`
+    import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
+    import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+    import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
     export let selected;
+    export let selectedTemplate;
     let oldSelected = selected;
     // let title: string = ;
-    let nocopyright: boolean = $currentTemplate.copyright === 2;
-    $ : nocopyright = $currentTemplate.copyright === 2;
+    let nocopyright: boolean;
+    $ : nocopyright = selectedTemplate?.copyright === 2;
 
     function handleClick(e) {
-        console.log(e.target.checked);
-        $currentTemplate.copyright = e.target.checked ? 2 : 1;
+        selectedTemplate.copyright = e.target.checked ? 2 : 1;
     }
 
     let edit = false;
@@ -22,71 +30,65 @@
             console.log(oldSelected);
             delete $template[oldSelected];
             oldSelected = selected
-            $currentTemplate.changed = true;
-            $template[selected] = $currentTemplate;
+            selectedTemplate.changed = true;
+            $template[selected] = selectedTemplate;
             console.log($template);
         }
         edit = e;
     }
 
-    function del() {
+    async function del() {
         delete $template[selected];
         $template = $template;
         console.log($template);
-        invoke('load',)
-            .then((res) => {
-                invoke('save', {
-                    config: {
-                        user: res.user,
-                        streamers: $template,
-                    }
-                })
-                    .then((res) => {
-                        console.log(res,);
-                        createPop('移除成功', 2000, 'Success');
-                    }).catch((e) => {
-                        createPop(e, 5000);
-                        console.log(e);
-                    }
-                )
-            }).catch((e) => console.log(e, 5000))
+        try {
+            let res = await invoke('load',)
+            res = await invoke('save', {
+                config: {
+                    user: res.user,
+                    streamers: $template,
+                }
+            })
+            createPop('移除成功', 2000, 'Success');
+        } catch (e) {
+            console.log(e);
+            createPop(e, 5000);
+        }
     }
 
-    function save() {
+    async function save() {
         // console.log({[selected]: config});
-        $currentTemplate.tag = tags.join(',');
-        invoke('load',)
-            .then((res) => {
-                res.streamers = $template;
-                invoke('save', {
-                    config: res
-                })
-                    .then((res) => {
-                        console.log(res,);
-                        $currentTemplate.changed = false;
-                        $template = $template;
-                        createPop('保存成功', 5000, 'Success');
-                    }).catch((e) => {
-                        createPop(e, 5000);
-                        console.log(e);
-                    }
-                )
-            }).catch((e) => console.log(e, 5000))
+        try {
+            let res = await invoke('load',)
+            res.streamers = $template;
+            res = await invoke('save', {
+                config: res
+            })
+            selectedTemplate.changed = false;
+            $template = $template;
+            createPop('保存成功', 5000, 'Success');
+        } catch (e) {
+            createPop(e, 5000);
+            console.log(e);
+        }
     }
 
-    let tags = [];
+    // console.log()
+    let tags = selectedTemplate?.tag ? selectedTemplate?.tag.split(',') : [];
+    // $: tags = selectedTemplate?.tag.split(',');
+
     let parent = '请选择';
     let children = '分区';
     let current;
     let currentChildren;
-    $:  {
+    $: {
         if ($partition) {
             // tags.flatMap()
             // $partition.flatMap()
             let changed = false;
             for (const partitionElement of $partition) {
                 for (const child of partitionElement.children) {
-                    if (child.id === $currentTemplate.tid) {
+                    if (child.id === selectedTemplate.tid) {
                         parent = partitionElement.name;
                         children = child.name;
                         current = partitionElement.id;
@@ -105,27 +107,23 @@
             }
             // console.log(typeList);
         }
-        // if ($currentTemplate != $template[oldSelected]) {
-            tags = $currentTemplate.tag.length === 0 ? [] : $currentTemplate.tag.split(',');
-        // }
     }
 
     let tempTag;
 
     function submit() {
-        $currentTemplate.videos = $currentTemplate?.files;
+        selectedTemplate.videos = selectedTemplate?.files;
         let dtime = null;
         if (isDtime) {
             dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
         invoke('submit', {
             studio: {
-                ...$currentTemplate,
+                ...selectedTemplate,
                 tag: tags.join(','),
                 dtime: dtime,
             }
-        })
-            .then((res) => {
+        }).then((res) => {
                 console.log(res);
                 createPop('投稿成功', 5000, 'Success');
             }).catch((e) => {
@@ -142,18 +140,20 @@
             return;
         }
         tags = [...tags, tempTag];
+        selectedTemplate.tag = tags.join(',');
         tempTag = null;
         return false;
     }
 
     function removeTag(tag) {
         tags = tags.filter(t => t !== tag);
+        selectedTemplate.tag = tags.join(',');
         console.log(tag);
     }
 
 
     function callback(detailTid, detailParent, detailChildren) {
-        $currentTemplate?.tid = detailTid;
+        selectedTemplate.tid = detailTid;
         parent = detailParent;
         children = detailChildren;
     }
@@ -161,6 +161,94 @@
     let isDtime = false;
     let date;
     let time;
+    import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
+    import {fetch, ResponseType} from "@tauri-apps/api/http";
+    // Register the plugins
+    registerPlugin(
+        FilePondPluginFileValidateType,
+        FilePondPluginImageExifOrientation,
+        FilePondPluginImagePreview,
+    );
+
+    // a reference to the component, used to call FilePond methods
+    let pond;
+    let labelIdle = `<span class="filepond--label-action">选择</span>并上传视频封面`;
+    // pond.getFiles() will return the active files
+
+    // the name to use for the internal file input
+    let name = 'filepond';
+
+    // handle filepond events
+    function handleInit() {
+        console.log('FilePond has initialised');
+    }
+
+    function handleRemoveFile(err, fileItem) {
+        selectedTemplate.cover = '';
+        console.log('A file has been removed', fileItem);
+    }
+    let server = {
+        process: (fieldName, file: File, metadata, load, error, progress, abort, transfer, options) => {
+            progress(false, 0, 0);
+
+            file.arrayBuffer().then((buffer) => {
+                return invoke('cover_up', {
+                    input: Array.prototype.slice.call(new Uint8Array(buffer))
+                });
+            }).then((res) => {
+                console.log(`${selectedTemplate.title} cover+${selected}`, res);
+                selectedTemplate.cover = res;
+                load(res);
+            }).catch((e) => {
+                error(e);
+                createPop(e, 5000);
+                console.log(e);
+            });
+            // Should expose an abort method so the request can be cancelled
+            return {
+                abort: () => {
+                    // This function is entered if the user has tapped the cancel button
+                    // request.abort();
+
+                    // Let FilePond know the request has been cancelled
+                    abort();
+                },
+            };
+        },
+
+        load: (source, load, error, progress, abort, headers) => {
+
+            progress(false, 0, 0);
+
+            // Should call the load method with a file object or blob when done
+            fetch(source, {method: "GET", responseType: ResponseType.Binary}).then((res) => {
+                load(new Blob([new Uint8Array(<number[]>res.data)], {type: res.headers['content-type']}));
+            }).catch((e) => {
+
+                error(e);
+                createPop(e, 5000);
+                console.log(e);
+            });
+            // Should expose an abort method so the request can be cancelled
+            return {
+                abort: () => {
+                    // User tapped cancel, abort our ongoing actions here
+
+                    // Let FilePond know the request has been cancelled
+                    abort();
+                },
+            };
+        },
+    };
+    let uploadedCover = selectedTemplate?.cover ? [{
+        // the server file reference
+        source: selectedTemplate.cover,
+
+        // set type to local to indicate an already uploaded file
+        options: {
+            type: 'local',
+        },
+    }] : null;
 </script>
 <div>
     <div class="shadow-md md:max-w-xl sm:max-w-sm lg:max-w-2xl w-screen px-10 pt-3 pb-10 mt-2 mb-2 bg-white rounded-xl"
@@ -202,17 +290,27 @@
                             </svg>
                         </div>
                     {/if}
-
-
                 </label>
-                <input bind:value={$currentTemplate.title}
+                <input bind:value={selectedTemplate.title}
                        class="text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
                        placeholder="标题">
             </div>
-            <Append/>
+            <Append selectedTemplate="{selectedTemplate}"/>
             <p class="text-sm text-gray-300">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
+            <div class="app">
+
+                <FilePond bind:this={pond} {name}
+                          labelIdle="{labelIdle}"
+                          server="{server}"
+                          files="{uploadedCover}"
+                          credits="{false}"
+                          onremovefile="{handleRemoveFile}"
+                          acceptedFileTypes="image/png, image/jpeg, image/gif"
+                          />
+
+            </div>
             <div class="mb-3 flex justify-between items-center">
 <!--                <div>-->
 <!--                    <div class="relative inline-block w-10 mr-2 align-middle select-none">-->
@@ -228,7 +326,7 @@
                     </span>
 <!--                </div>-->
                 <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                    <input bind:value={$currentTemplate.source} class="input input-bordered w-full" id="rounded-email"
+                    <input bind:value={selectedTemplate.source} class="input input-bordered w-full" id="rounded-email"
                            placeholder="转载来源"
                            type="text"/>
                 </div>
@@ -254,8 +352,8 @@
                 <!--                <input bind:this={archivePre} bind:value={tid} type="text" class=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" placeholder="分区"/>-->
             </div>
             <div class="flex flex-wrap rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                {#each tags as tag}
-                    <span class="flex  ml-1 my-1.5 px-3 py-0.5 text-base rounded-full text-white  bg-indigo-500 ">
+                {#each tags as tag(tag)}
+                    <span animate:flip="{{duration: 300}}" class="flex  ml-1 my-1.5 px-3 py-0.5 text-base rounded-full text-white  bg-indigo-500 ">
                         {tag}
                         <button on:click={(e)=>{removeTag(tag)}} class="bg-transparent hover">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
@@ -275,7 +373,7 @@
                 <label class="label">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
                 </label>
-                <textarea bind:value={$currentTemplate.desc}
+                <textarea bind:value={selectedTemplate.desc}
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="简介补充: ..." rows="4"></textarea>
             </div>
@@ -283,7 +381,7 @@
                 <label class="label">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
                 </label>
-                <textarea bind:value={$currentTemplate.dynamic}
+                <textarea bind:value={selectedTemplate.dynamic}
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="动态描述" rows="4"></textarea>
             </div>
@@ -304,7 +402,6 @@
         </div>
     </div>
 </div>
-
 
 <style>
     .copyright {

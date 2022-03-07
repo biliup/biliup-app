@@ -1,22 +1,23 @@
 <script>
-    import {attach, currentTemplate, fileselect} from './store.ts';
+    import {attach, fileselect} from './store.ts';
     import {flip} from 'svelte/animate';
     import Progress from "./Progress.svelte";
     import DragAndDrop from './Drag-and-drop.svelte';
     import {dndzone} from "svelte-dnd-action";
 
+    export let selectedTemplate;
+
     const flipDurationMs = 300;
 
     function handleDndConsider(e) {
         // items = e.detail.items;
-        $currentTemplate['files'] = e.detail.items;
-        console.log("1212", items)
+        selectedTemplate['files'] = e.detail.items;
     }
 
     function handleDndFinalize(e) {
         // items = e.detail.items;
-        $currentTemplate['files'] = e.detail.items;
-        console.log(e.detail.items);
+        selectedTemplate['files'] = e.detail.items;
+        console.log('Finalize', e.detail.items);
     }
 
     let items = [];
@@ -24,9 +25,9 @@
 
     let visible;
 
-    $: if ($currentTemplate) {
-        visible = $currentTemplate?.files.length !== 0;
-        items = [...$currentTemplate?.files];
+    $: if (selectedTemplate) {
+        visible = selectedTemplate?.files.length !== 0;
+        items = [...selectedTemplate?.files];
     }
 </script>
 
@@ -55,12 +56,11 @@
         <DragAndDrop/>
     {:else}
         <!--{#await promise then value}-->
-        <div use:dndzone="{{items: $currentTemplate.files, flipDurationMs}}" on:consider="{handleDndConsider}"
+        <div use:dndzone="{{items: selectedTemplate.files, flipDurationMs}}" on:consider="{handleDndConsider}"
              on:finalize="{handleDndFinalize}" class="flex flex-col rounded-lg">
-            {#each $currentTemplate.files as file(file.filename)}
+            {#each selectedTemplate.files as file(file.id)}
                 <div class="shadow-sm rounded-lg" animate:flip="{{duration: flipDurationMs}}">
-                    <Progress fullname={file.filename} complete={file.complete} title={file.title}
-                              progress={file.progress} speed={file.speed} totalSize={file.totalSize}/>
+                    <Progress file="{file}" bind:selectedTemplate="{selectedTemplate}"/>
                     <!--{file.title}-->
                 </div>
             {/each}

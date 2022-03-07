@@ -3,6 +3,7 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
+use std::borrow::Cow;
 use std::cell::Cell;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -198,6 +199,14 @@ fn load() -> Result<Config> {
     Ok(config)
 }
 
+#[tauri::command]
+async fn cover_up(input: Cow<'_, [u8]>) -> Result<String> {
+    let (login_info, client) = login_by_cookies().await?;
+    let bili = BiliBili::new(&login_info, &client);
+    let url = bili.cover_up(&input).await?;
+    Ok(url)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -213,7 +222,8 @@ fn main() {
             send_sms,
             login_by_qrcode,
             get_qrcode,
-            get_myinfo
+            get_myinfo,
+            cover_up
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
