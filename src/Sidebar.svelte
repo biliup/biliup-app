@@ -6,6 +6,7 @@
     import {fetch, ResponseType} from "@tauri-apps/api/http";
     import {open} from "@tauri-apps/api/shell";
     import {configDir} from "@tauri-apps/api/path";
+    import Modal from "./Modal.svelte";
 
     let face = 'noface.jpg';
     let name = null;
@@ -31,8 +32,7 @@
         return window.btoa(binary);
     }
 
-    let items = [];
-    $: items = [...Object.keys($template)];
+    export let items = [];
 
     async function add() {
         let name = '未命名模板' + Object.keys($template).length;
@@ -96,26 +96,25 @@
         await invoke('save', {config: ret});
     }
 </script>
-<div class="flex flex-col w-72 h-screen px-4 py-8 bg-white border-r dark:bg-gray-800 dark:border-gray-600 overflow-auto"
+<div class="flex flex-col w-72 h-screen px-4 pt-8 bg-white border-r overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
     <div class="flex items-center px-3 -mx-2">
         <img class="object-cover rounded-full h-9 w-9" src="{face}" alt="avatar"/>
         <div data-tip="打开配置文件夹" class="tooltip">
             <h4 on:click={openConfigDir} class="mx-2 font-medium text-gray-800 dark:text-gray-200 hover:underline truncate">{name}</h4>
         </div>
+        <Modal>
+            <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} >
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                </svg>
+            </a>
 
-        <label for="my-modal-2" data-tip="设置" class="cursor-pointer tooltip" on:click={loadSettings}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-            </svg>
-        </label>
-        <input type="checkbox" id="my-modal-2" class="modal-toggle">
-        <div class="modal">
-            <div class="modal-box">
+            <div slot="box" let:componentId>
                 <div class="space-y-2.5">
                     <h4>单视频并发数：{limit}</h4>
-                    <input type="range" max="128" min="1" bind:value={limit} class="range">
-<!--                    <button class="btn btn-outline">线路: AUTO</button>-->
+                    <input type="range" max="128" min="1" bind:value={limit} class="range  range-xs">
+                    <!--                    <button class="btn btn-outline">线路: AUTO</button>-->
                     <h4>上传线路选择：</h4>
                     <div class="btn-group">
                         {#each lines as l}
@@ -125,15 +124,18 @@
                 </div>
 
                 <div class="modal-action">
-                    <label for="my-modal-2" on:click={saveSettings} class="btn btn-accent">Save</label>
-                    <label for="my-modal-2" class="btn">Close</label>
+                    <label for="{componentId}" on:click={saveSettings} class="btn btn-accent">Save</label>
+                    <label for="{componentId}" class="btn">Close</label>
                 </div>
             </div>
-        </div>
+
+        </Modal>
+
     </div>
 
+
     <div class="flex flex-col justify-between flex-1 mt-6">
-        <nav>
+        <nav class="">
             {#each items as item(item)}
 
                 <a animate:flip="{{duration: 300}}" class:selected="{$currentTemplate.current === item}"
@@ -157,14 +159,16 @@
             {/each}
         </nav>
 
-        <button class="mt-6 py-2 px-4 flex justify-center items-center  bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
-                on:click={add}
-                type="button">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                 xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-        </button>
+        <div class="sticky bottom-0 bg-base-100">
+            <button class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
+                    on:click={add}
+                    type="button">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                </svg>
+            </button>
+        </div>
     </div>
 </div>
 

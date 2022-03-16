@@ -7,6 +7,7 @@ import Partition from "./Partition.svelte";
 import {writable} from "svelte/store";
 import Pop from "./Pop.svelte";
 import {check_outros, group_outros, transition_out} from "svelte/internal";
+import Modal from "./Modal.svelte";
 
 export let partition = writable(null);
 
@@ -27,9 +28,9 @@ export function archivePre(node, combine) {
         interactive: true,
         onCreate(instance) {
 
-            // @ts-ignore
             partition = new Partition({
-                target: instance.popper.firstChild.lastChild, props: {
+                target: <Element>instance.popper.firstChild.lastChild,
+                props: {
                     current: combine.current,
                     currentChildren: combine.currentChildren
                 }
@@ -71,8 +72,16 @@ export function archivePre(node, combine) {
     };
 }
 
+const notificationHistory = [];
+export const notifyHistory = writable(notificationHistory);
 
 export function createPop(msg, duration = 3000, mode = 'Error') {
+    notificationHistory.push({
+        type: mode,
+        msg: msg,
+        date: new Date(),
+    });
+    notifyHistory.set(notificationHistory);
     const pop = new Pop({
         target: document.querySelector('#alerts'),
         intro: true,
@@ -83,6 +92,7 @@ export function createPop(msg, duration = 3000, mode = 'Error') {
     });
     setTimeout(() => outroAndDestroy(pop), duration);
 }
+
 
 // Workaround for https://github.com/sveltejs/svelte/issues/4056
 const outroAndDestroy = (instance) => {

@@ -46,17 +46,19 @@
         $fileHover = false;
         // setContext("hover", fileHover);
     });
+    let items = [];
+    $: items = [...Object.keys($template)];
 </script>
 
 <div class="flex items-start">
-    <Sidebar/>
-    <div
-            class="grid justify-center w-screen h-screen rhs overflow-y-auto overflow-x-hidden">
+    <Sidebar items="{items}"/>
+    <div class="grid justify-center w-screen h-screen rhs overflow-y-auto overflow-x-hidden">
         <div class="grid items-center justify-around min-h-screen">
             <!--        <Upload selected={current}/>-->
             {#key $currentTemplate.current}
                 <Upload selected={$currentTemplate.current} selectedTemplate="{$currentTemplate.selectedTemplate}"/>
             {/key}
+
             <!--        <slot {current}></slot>-->
         </div>
     </div>

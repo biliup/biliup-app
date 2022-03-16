@@ -5,7 +5,7 @@
     export let mode = '';
 </script>
 
-<div class="flex mt-2.5 mr-1.5 w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800"
+<div class="flex mt-2.5 mr-1.5 min-w-fit max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md"
      transition:fly={{x: 500}}>
     {#if (mode === 'Error')}
 
