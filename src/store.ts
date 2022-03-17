@@ -61,12 +61,13 @@ export function attach(files) {
                 continue;
             }
             let split = file.split(sep);
+            let filename = split[split.length - 1];
 
             // temp['files'] = [...temp['files'], ...event.target.files];
             temp.selectedTemplate['files'].push({
                 filename: file,
                 id: file,
-                title: split[split.length - 1],
+                title: filename.substring(0, filename.lastIndexOf(".")),
                 desc: '',
                 progress: 0,
                 speed: 0,
@@ -126,6 +127,11 @@ function upload(video, temp) {
     }).finally(() => {
         temp.atomicInt--;
         if (allComplete(temp['files'], temp)) {
+            console.log(temp.submitCallback);
+            if (temp.submitCallback) {
+                temp.submitCallback();
+                temp.submitCallback=null;
+            }
             console.log("allComplete");
             return;
         }
