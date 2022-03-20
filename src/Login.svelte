@@ -152,8 +152,8 @@
 </script>
 <div class="abs min-h-screen flex flex-col sm:justify-center items-center bg-white " transition:fade>
     <div class="relative sm:max-w-sm w-full" transition:scale>
-        <div class="card bg-blue-400 shadow-lg  w-full h-full rounded-3xl absolute  transform -rotate-6"></div>
-        <div class="card bg-red-400 shadow-lg  w-full h-full rounded-3xl absolute  transform rotate-6"></div>
+        <div class="card bg-blue-400 shadow-lg  w-full h-full rounded-3xl absolute transform -rotate-6"></div>
+        <div class="card bg-red-400 shadow-lg  w-full h-full rounded-3xl absolute transform rotate-6"></div>
         <div class="relative w-full rounded-3xl px-10 py-5 bg-zinc-50 shadow-md">
 
             {#if loginMethod === "password"}
@@ -165,16 +165,16 @@
                     </button>
                 </div>
                 <form>
-                    <label class="block text-sm text-gray-800 dark:text-gray-200">用户名</label>
-                    <input bind:value={username} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
+                    <label class="block text-sm text-gray-800">用户名</label>
+                    <input bind:value={username} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
                                type="text">
 
                     <div class="mt-4">
                         <div class="flex items-center justify-between">
-                            <label class="block text-sm text-gray-800 dark:text-gray-200" for="password">密码</label>
+                            <label class="block text-sm text-gray-800" for="password">密码</label>
                         </div>
 
-                        <input bind:value={password} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
+                        <input bind:value={password} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
                                type="password">
                     </div>
                     <label class="flex items-center mt-4">
@@ -232,11 +232,6 @@
             <div class="flex items-center mt-6 -mx-2">
                 <button type="button" on:click={() => loginMethod = "sms"}
                         class="flex items-center justify-center w-full px-6 py-2 mx-2 text-sm font-medium text-white transition-colors duration-200 transform bg-blue-500 rounded-md hover:bg-blue-400 focus:bg-blue-400 focus:outline-none">
-<!--                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">-->
-<!--                        <path-->
-<!--                                d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z">-->
-<!--                        </path>-->
-<!--                    </svg>-->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                     </svg>

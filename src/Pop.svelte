@@ -17,8 +17,8 @@
 
         <div class="px-4 py-2 -mx-3">
             <div class="mx-3">
-                <span class="font-semibold text-red-500 dark:text-red-400">Error</span>
-                <p class="text-sm text-gray-600 dark:text-gray-200">{msg}</p>
+                <span class="font-semibold text-red-500">Error</span>
+                <p class="text-sm text-gray-600">{msg}</p>
             </div>
         </div>
     {:else }
@@ -30,8 +30,8 @@
 
         <div class="px-4 py-2 -mx-3">
             <div class="mx-3">
-                <span class="font-semibold text-green-500 dark:text-green-400">Success</span>
-                <p class="text-sm text-gray-600 dark:text-gray-200">{msg}</p>
+                <span class="font-semibold text-green-500">Success</span>
+                <p class="text-sm text-gray-600">{msg}</p>
             </div>
         </div>
     {/if}

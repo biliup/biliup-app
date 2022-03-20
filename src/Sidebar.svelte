@@ -101,7 +101,7 @@
     <div class="flex items-center px-3 -mx-2">
         <img class="object-cover rounded-full h-9 w-9" src="{face}" alt="avatar"/>
         <div data-tip="打开配置文件夹" class="tooltip">
-            <h4 on:click={openConfigDir} class="mx-2 font-medium text-gray-800 dark:text-gray-200 hover:underline truncate">{name}</h4>
+            <h4 on:click={openConfigDir} class="mx-2 font-medium text-gray-800 hover:underline truncate">{name}</h4>
         </div>
         <Modal>
             <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} >
@@ -159,7 +159,7 @@
             {/each}
         </nav>
 
-        <div class="sticky bottom-0 bg-base-100">
+        <div class="sticky bottom-0 bg-white">
             <button class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
                     on:click={add}
                     type="button">
