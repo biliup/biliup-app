@@ -122,7 +122,7 @@ function upload(video, temp) {
         });
         console.log(`Message:`, res);
     }).catch((e) => {
-        createPop(e, 5000);
+        createPop(`${video.filename}: ${e}`, 5000);
         console.log(e);
     }).finally(() => {
         temp.atomicInt--;

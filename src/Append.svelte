@@ -20,9 +20,19 @@
         console.log('Finalize', e.detail.items);
     }
 
+    function sortVideos() {
+        selectedTemplate['files'] = selectedTemplate['files'].sort((a, b) => {
+            if (order) {
+                return a.id.localeCompare(b.id);
+            } else {
+                return b.id.localeCompare(a.id);
+            }
+        });
+    }
+
     let items = [];
 
-
+    let order = false;
     let visible;
 
     $: if (selectedTemplate) {
@@ -33,7 +43,23 @@
 
 <div class="grid">
     <div class="grid grid-flow-col mb-1 ">
-        <label class="w-auto flex items-center text-sm font-bold text-gray-500 tracking-wide">视频</label>
+        <label class="w-auto flex items-center text-sm font-bold text-gray-500 tracking-wide">
+            视频
+            <label class="swap swap-rotate ml-2" on:click={sortVideos}>
+
+                <!-- this hidden checkbox controls the state -->
+                <input type="checkbox" bind:checked="{order}"/>
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="swap-off fill-current h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="swap-on fill-current h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+            </label>
+        </label>
+
+
         {#if (visible)}
             <button type="button" on:click={fileselect}
                     class="justify-self-end py-1.5 px-3 flex justify-center items-center w-max bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-xs font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full">
