@@ -10,7 +10,7 @@
 	// overrideItemIdKeyNameBeforeInitialisingDndZones("filename");
 </script>
 
-<main class="bg-gray-100" on:dragenter|preventDefault on:dragleave|preventDefault on:dragover|preventDefault
+<main class="bg-gradient-to-b from-[#fefefe] to-[#e7f9f4]" on:dragenter|preventDefault on:dragleave|preventDefault on:dragover|preventDefault
       on:drop|preventDefault>
     {#if $isLogin}
         <Home/>
@@ -70,11 +70,11 @@
                     <div slot="box" class="">
                         <h1 class="text-2xl font-bold text-center">
                             biliup-app
-                            <span class="badge badge-primary">v0.2.0</span>
+                            <span class="badge badge-primary">v0.2.2</span>
                         </h1>
                         <p class="mt-3">
                             欢迎使用，如果操作有一些疑问，可以先查看
-                            <a class="text-blue-600 after:content-['_↗'] ..." href="https://forgqi.github.io/biliup-app " target="_blank">文档</a>
+                            <a class="text-blue-600 after:content-['_↗'] ..." href="https://biliup.github.io/biliup-app " target="_blank">文档</a>
                             里面有使用演示视频，下载地址（建议保持更新到最新版）与源码的地址。如果有什么建议可以在GitHub的issue中提出。
                             这个软件能帮到你的话，可以在GitHub上点个star，谢谢！
                     </div>

@@ -52,8 +52,8 @@
 
 <div class="flex items-start">
     <Sidebar items="{items}"/>
-    <div class="grid justify-center w-screen h-screen rhs overflow-y-auto overflow-x-hidden">
-        <div class="grid items-center justify-around min-h-screen">
+    <div class="w-screen h-screen overflow-y-auto overflow-x-hidden">
+        <div class="min-h-screen">
             <!--        <Upload selected={current}/>-->
             {#key $currentTemplate.current}
                 <Upload selected={$currentTemplate.current} selectedTemplate="{$currentTemplate.selectedTemplate}"/>

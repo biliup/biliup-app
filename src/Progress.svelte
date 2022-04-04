@@ -70,7 +70,7 @@
         <div class="flex">
             <span class="w-full">
                 <div class="flex w-full justify-between">
-                    <input bind:value="{file.title}" class="w-full truncate"/>
+                    <input bind:value="{file.title}" class="bg-inherit w-full truncate"/>
                     <!--{title}-->
                     <div class="text-gray-500 min-w-fit text-sm">{(totalSize/1024/1024).toFixed(2)} MiB</div>
                 </div>

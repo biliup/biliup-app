@@ -4,6 +4,7 @@
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
+    import { fade, fly } from 'svelte/transition';
     import {flip} from 'svelte/animate';
     // Import the Image EXIF Orientation and Image Preview plugins
     // Note: These need to be installed separately
@@ -176,9 +177,31 @@
         children = detailChildren;
     }
     let dtime;
-    let isDtime = false;
+    let isDtime = selectedTemplate.dtime !== null;
     let date;
     let time;
+
+    if (isDtime) {
+        dtime = new Date(selectedTemplate.dtime * 1000);
+        console.log("121", dtime);
+        date = dtime.getFullYear() + '-' + pad(dtime.getMonth() + 1) + '-' + pad(dtime.getDate());
+        time = pad(dtime.getHours()) + ':' + pad(dtime.getMinutes());
+    }
+
+    //pad a value with leading zeros
+    function pad(value) {
+        return ('00'+value).slice(-2);
+    }
+
+
+    $: if (isDtime) {
+        console.log(date)
+        console.log(time)
+        selectedTemplate.dtime = new Date(`${date} ${time}`).valueOf()/1000;
+    } else {
+        selectedTemplate.dtime = null;
+    }
+
     import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
     import {fetch, ResponseType} from "@tauri-apps/api/http";
     // Register the plugins
@@ -268,30 +291,11 @@
         },
     }] : null;
 </script>
-<div>
-    <div class="shadow-md md:max-w-xl sm:max-w-sm lg:max-w-2xl w-screen px-10 pt-3 pb-10 mt-2 mb-2 bg-white rounded-xl"
-         in:receive={{key: selected}}>
+<div in:fly="{{ y: 200, duration: 400 }}">
+    <div class="px-6 pt-3 pb-10 my-2 mr-12" >
         <div class="space-y-3">
-            <div class="flex flex-row-reverse">
-                <button class="ml-2 py-2 px-2 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={del}
-                        type="button">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                         xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="2"/>
-                    </svg>
-                </button>
-                <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={save}
-                        type="button">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                         xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round"
-                              stroke-width="2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="flex flex-col">
-                <label class="text-sm font-bold text-gray-500 tracking-wide mb-2">
+            <div class="flex justify-between">
+                <label class="text-lg font-bold tracking-wide mb-2">
                     {#if (edit)}
                         <input on:focusout={()=> update(false)} bind:value={selected}
                                class="w-full p-1 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
@@ -309,16 +313,33 @@
                         </div>
                     {/if}
                 </label>
-                <input bind:value={selectedTemplate.title}
-                       class="text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                       placeholder="标题">
+                <div class="flex flex-row-reverse">
+                    <button class="ml-2 py-2 px-2 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={del}
+                            type="button">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={save}
+                            type="button">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
+            <input bind:value={selectedTemplate.title}
+                   class="bg-[#f9fcfd] w-full text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                   placeholder="标题">
             <Append selectedTemplate="{selectedTemplate}"/>
             <p class="text-sm text-gray-300">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
             <div class="app">
-
                 <FilePond bind:this={pond} {name}
                           labelIdle="{labelIdle}"
                           server="{server}"
@@ -327,36 +348,36 @@
                           onremovefile="{handleRemoveFile}"
                           acceptedFileTypes="image/png, image/jpeg, image/gif"
                           />
-
             </div>
-            <div class="mb-3 flex justify-between items-center">
-<!--                <div>-->
-<!--                    <div class="relative inline-block w-10 mr-2 align-middle select-none">-->
-                        <!--                        bind:checked={nocopyright}-->
-                        <input checked={nocopyright} class="toggle" id="Orange"
-                               name="toggle" on:change={(event) => handleClick(event)}
-                               type="checkbox"/>
-<!--                        <label class="block overflow-hidden h-6 rounded-full bg-gray-100 cursor-pointer" for="Orange">-->
-<!--                        </label>-->
-<!--                    </div>-->
-                    <span class="mx-2 w-auto text-sm text-gray-500 tracking-wide">
+            <div class="bg-[#fafcfd] border rounded-md px-2 py-1">
+                <div class="mb-3 flex justify-between items-center">
+                    <!--                <div>-->
+                    <!--                    <div class="relative inline-block w-10 mr-2 align-middle select-none">-->
+                    <!--                        bind:checked={nocopyright}-->
+                    <input checked={nocopyright} class="toggle" id="Orange"
+                           name="toggle" on:change={(event) => handleClick(event)}
+                           type="checkbox"/>
+                    <!--                        <label class="block overflow-hidden h-6 rounded-full bg-gray-100 cursor-pointer" for="Orange">-->
+                    <!--                        </label>-->
+                    <!--                    </div>-->
+                    <span class="mx-2 w-auto text-sm tracking-wide">
                             是否转载
                     </span>
-<!--                </div>-->
-                <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                    <input bind:value={selectedTemplate.source} class="input input-bordered w-full" id="rounded-email"
-                           placeholder="转载来源"
-                           type="text"/>
+                    <!--                </div>-->
+                    <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
+                        <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text"/>
+                    </div>
                 </div>
+                {#if !nocopyright}
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">自制声明：未经作者授权 禁止转载</span>
+                            <input type="checkbox" bind:checked="{noReprint}" class="checkbox">
+                        </label>
+                    </div>
+                {/if}
             </div>
-            {#if !nocopyright}
-                <div class="form-control">
-                    <label class="label cursor-pointer">
-                        <span class="label-text">自制声明：未经作者授权 禁止转载</span>
-                        <input type="checkbox" bind:checked="{noReprint}" class="checkbox">
-                    </label>
-                </div>
-            {/if}
+
 
             <div class="flex w-52" use:archivePre={{callback, current, currentChildren}}>
                 <button class="border border-gray-300 relative w-full bg-white rounded-md pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"

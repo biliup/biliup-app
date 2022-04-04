@@ -43,7 +43,7 @@
 
 <div class="grid">
     <div class="grid grid-flow-col mb-1 ">
-        <label class="w-auto flex items-center text-sm font-bold text-gray-500 tracking-wide">
+        <label class="w-auto flex items-center font-bold tracking-wide">
             视频
             <label class="swap swap-rotate ml-2" on:click={sortVideos}>
 
@@ -83,7 +83,7 @@
     {:else}
         <!--{#await promise then value}-->
         <div use:dndzone="{{items: selectedTemplate.files, flipDurationMs}}" on:consider="{handleDndConsider}"
-             on:finalize="{handleDndFinalize}" class="flex flex-col rounded-lg">
+             on:finalize="{handleDndFinalize}" class="bg-[#fafcfd] flex flex-col rounded-lg">
             {#each selectedTemplate.files as file(file.id)}
                 <div class="shadow-sm rounded-lg" animate:flip="{{duration: flipDurationMs}}">
                     <Progress file="{file}" bind:selectedTemplate="{selectedTemplate}"/>

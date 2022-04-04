@@ -96,7 +96,7 @@
         await invoke('save', {config: ret});
     }
 </script>
-<div class="flex flex-col w-72 h-screen px-4 pt-8 bg-white border-r overflow-auto"
+<div class="flex flex-col w-72 h-screen px-4 pt-8 bg-inherit overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
     <div class="flex items-center px-3 -mx-2">
         <img class="object-cover rounded-full h-9 w-9" src="{face}" alt="avatar"/>
@@ -150,16 +150,13 @@
                         <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M7 7H17"
                               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    {#if $currentTemplate.current !== item}
-                        <div out:send={{key: item}}></div>
-                    {/if}
                     <span class="ml-4 font-medium truncate">{item}</span>
                 </a>
 
             {/each}
         </nav>
 
-        <div class="sticky bottom-0 bg-white">
+        <div class="sticky bottom-0 bg-inherit">
             <button class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
                     on:click={add}
                     type="button">
