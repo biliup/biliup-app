@@ -17,11 +17,11 @@
     }
     let id = file.id;
     const fitSpeed = tweened(null, {
-        duration: 5000,
+        duration: 2500,
         // easing: cubicOut
     });
     const fitProgress = tweened(null, {
-        duration: 5000,
+        duration: 1000,
         // easing: cubicOut
     });
 
@@ -79,7 +79,7 @@
             </span>
         </div>
     </div>
-    <div class="flex-none flex flex-col w-16 h-12 justify-center items-center text-gray-500 font-mono text-xs">
+    <div class="flex-none flex flex-col w-20 h-12 justify-center items-center text-gray-500 font-mono text-xs">
         <!-- This item will not grow -->
         <div>
             <!--{Math.round($fitSpeed * 100) / 100} MB/s-->

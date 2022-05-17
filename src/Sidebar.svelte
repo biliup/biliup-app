@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {send, template, currentTemplate} from "./store.ts";
+    import {currentTemplate, template} from "./store.ts";
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
     import {invoke} from "@tauri-apps/api/tauri";
@@ -12,7 +12,6 @@
     let name = null;
     invoke('get_myinfo').then((ret) => {
         console.log(ret);
-        console.log(ret['data']['face']);
         fetch(<string>ret['data']['face'], {method: "GET", responseType: ResponseType.Binary}).then((res)=>{
             face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
         })
@@ -35,7 +34,32 @@
     export let items = [];
 
     async function add() {
-        let name = '未命名模板' + Object.keys($template).length;
+        if (tempName?.length > 2 && (tempName.startsWith('av') || tempName.startsWith('BV'))) {
+            if (await invoke('is_vid', {input: tempName})) {
+                $template[tempName] = await invoke('show_video', {input: tempName});
+                $template[tempName]['files'] = [];
+                $template[tempName]['videos'].forEach((value) => {
+                    $template[tempName]['files'].push({
+                        filename: value.filename,
+                        id: value.filename,
+                        title: value.title,
+                        desc: value.desc,
+                        progress: 100,
+                        uploaded: 0,
+                        speed: 0,
+                        totalSize: 0,
+                        complete: true,
+                        process: false,
+                    });
+                })
+                $template[tempName].atomicInt = 0;
+                let res = await invoke('load');
+                res.streamers = $template;
+                await invoke('save', {config: res});
+                return;
+            }
+        }
+        let name = tempName ?? '未命名模板' + Object.keys($template).length;
         $template[name] = {
             title: '',
             files: [],
@@ -59,6 +83,7 @@
         let res = await invoke('load');
         res.streamers = $template;
         await invoke('save', {config: res});
+        tempName = null;
     }
 
     function select(item) {
@@ -69,7 +94,7 @@
     async function openConfigDir(){
         await open(await configDir()+'biliup');
     }
-    let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo'];
+    let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
     let line = 'auto';
     let limit = 3;
 
@@ -95,6 +120,8 @@
         ret.limit = limit;
         await invoke('save', {config: ret});
     }
+
+    let tempName: string;
 </script>
 <div class="flex flex-col w-72 h-screen px-4 pt-8 bg-inherit overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
@@ -118,7 +145,7 @@
                     <h4>上传线路选择：</h4>
                     <div class="btn-group">
                         {#each lines as l}
-                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline">
+                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
                         {/each}
                     </div>
                 </div>
@@ -146,25 +173,52 @@
                           <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-500"></span>
                         </span>
                     {/if}
-                    <svg class="flex-none w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M7 7H17"
-                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="ml-4 font-medium truncate">{item}</span>
+
+                    {#if (item.startsWith('av') || item.startsWith('BV'))}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="flex-none h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                        <span class="ml-4 font-medium truncate">{$template[item].title}</span>
+                    {:else}
+                        <svg class="flex-none w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M7 7H17"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="ml-4 font-medium truncate">{item}</span>
+                    {/if}
                 </a>
 
             {/each}
         </nav>
 
         <div class="sticky bottom-0 bg-inherit">
-            <button class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
-                    on:click={add}
-                    type="button">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                     xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-                </svg>
-            </button>
+            <Modal>
+                <a slot="open-modal" class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
+                        type="button">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                    </svg>
+                </a>
+                <div slot="box" let:componentId>
+                    <div class="form-control w-full max-w-xs">
+                        <label class="label">
+                            <span class="label-text">输入BV或av号可编辑现有稿件</span>
+                            <span class="label-text-alt">av971158452</span>
+                        </label>
+                        <input type="text" bind:value={tempName} placeholder="{'未命名模板' + Object.keys($template).length}" class="input input-bordered w-full max-w-xs" />
+                        <label class="label">
+                            <span class="label-text-alt">输入其他将新建投稿模板</span>
+                            <span class="label-text-alt">BV1ip4y1x7Gi</span>
+                        </label>
+                    </div>
+
+                    <div class="modal-action">
+                        <label for="{componentId}" on:click={add} class="btn btn-accent">添加模板</label>
+                        <label for="{componentId}" class="btn">Close</label>
+                    </div>
+                </div>
+            </Modal>
         </div>
     </div>
 </div>

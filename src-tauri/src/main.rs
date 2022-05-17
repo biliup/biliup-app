@@ -6,20 +6,28 @@ windows_subsystem = "windows"
 use std::borrow::Cow;
 use std::cell::Cell;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::task::Poll;
 use std::time::Instant;
 
 use anyhow::{anyhow, bail, Context};
-use biliup::{Account, Config, line, User};
+use biliup::{Account, Config, line, User, VideoFile};
 use biliup::client::{Client, LoginInfo};
 use biliup::video::{BiliBili, Studio, Video};
+use bytes::Buf;
+use futures::future::abortable;
+use futures::stream::Abortable;
 use tauri::{Manager, Window};
 
 // use app::video::{BiliBili, Client, LoginInfo, Studio, Video};
 use app::{config_file, cookie_file, encode_hex, login_by_cookies};
 use app::error;
 use app::error::Result;
+use futures::StreamExt;
+use tokio::sync::mpsc;
+
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
@@ -96,7 +104,7 @@ async fn get_qrcode() -> Result<serde_json::Value> {
 
 
 #[tauri::command]
-async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
+async fn upload(mut video: Video, window: Window) -> Result<Video> {
     let (_, client) = login_by_cookies().await?;
 
     let config = load()?;
@@ -106,50 +114,53 @@ async fn upload(mut video: Video, window: Window) -> Result<(Video, f64)> {
             "bda2" => line::bda2(),
             "ws" => line::ws(),
             "qn" => line::qn(),
+            "cos" => line::cos(),
+            "cos-internal" => line::cos_internal(),
             _ => unreachable!()
         }
     } else {
         line::Probe::probe().await?
     };
     let limit = config.limit;
-    let remove = Arc::new(AtomicBool::new(true));
-    let is_remove = Arc::clone(&remove);
-    let id = window.once(encode_hex(video.filename.encode_utf16().collect::<Vec<u16>>().as_slice()), move |event| {
-        println!("got window event-name with payload {:?}", event.payload());
-        is_remove.store(false, Ordering::Relaxed);
-    });
-    let mut uploaded = 0;
-    let mut speed = 0.;
+
 
     let filename = video.filename;
     let filepath = PathBuf::from(&filename);
-    let parcel = probe.to_uploader(&filepath).await?;
-    let total_size = parcel.total_size;
-    let instant = Instant::now();
-    video = parcel.upload(&client, limit, |len| {
-        window
-            .emit(
-                "progress",
-                (
-                    &filename,
-                    uploaded,
-                    total_size,
-                    uploaded as f64 / 1000. / instant.elapsed().as_millis() as f64,
-                ),
-            )
-            .unwrap();
-        uploaded += len;
-        speed = uploaded as f64 / 1000. / instant.elapsed().as_millis() as f64;
-        println!(
-            "{:.2}% => {:.2} MB/s.",
-            uploaded as f64 / total_size as f64 * 100.,
-            speed
-        );
-        println!("{}", remove.load(Ordering::Relaxed));
-        remove.load(Ordering::Relaxed)
-    }).await?;
+    let video_file = VideoFile::new(&filepath)?;
+    let total_size = video_file.total_size;
+    let parcel = probe.to_uploader(video_file);
+    let (tx, mut rx) = mpsc::unbounded_channel();
+    // let (tx, mut rx) = mpsc::channel(1);
+
+    let f_video = parcel.upload(&client, limit, |vs| {
+        vs.map(|chunk| {
+            let (chunk, len) = chunk?;
+            let progressbar = app::Progressbar::new(chunk, tx.clone());
+            Ok((progressbar, len))
+        })
+    });
+    let (a_video, abort_handle) = abortable(f_video);
+    let id = window.once(encode_hex(filename.encode_utf16().collect::<Vec<u16>>().as_slice()), move |event| {
+        abort_handle.abort();
+        println!("got window event-name with payload {:?}", event.payload());
+        // is_remove.store(false, Ordering::Relaxed);
+    });
+    tokio::spawn(async move {
+        while let Some(len) = rx.recv().await {
+            window
+                .emit(
+                    "progress",
+                    (
+                        &filename,
+                        len,
+                        total_size
+                    ),
+                ).unwrap();
+        }
+    });
+    video = a_video.await??;
     println!("上传成功");
-    Ok((video, speed))
+    Ok(video)
 }
 
 #[tauri::command]
@@ -207,6 +218,37 @@ async fn cover_up(input: Cow<'_, [u8]>) -> Result<String> {
     Ok(url)
 }
 
+#[tauri::command]
+fn is_vid(input: &str) -> bool {
+    biliup::video::Vid::from_str(input).is_ok()
+}
+
+#[tauri::command]
+async fn show_video(input: &str) -> Result<Studio> {
+    let (login_info, client) = login_by_cookies().await?;
+    let bili = BiliBili::new(&login_info, &client);
+    let mut data = bili.video_data(biliup::video::Vid::from_str(input)?).await?;
+    let mut studio: Studio = serde_json::from_value(data["archive"].take())?;
+    studio.videos = data["videos"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| Video {
+            desc: v["desc"].as_str().unwrap().to_string(),
+            filename: v["filename"].as_str().unwrap().to_string(),
+            title: v["title"].as_str().map(|t| t.to_string()),
+        })
+        .collect();
+    Ok(studio)
+}
+
+#[tauri::command]
+async fn edit_video(mut studio: Studio) -> Result<serde_json::Value> {
+    let (login_info, _) = login_by_cookies().await?;
+    let ret = studio.edit(&login_info).await?;
+    Ok(ret)
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -223,7 +265,10 @@ fn main() {
             login_by_qrcode,
             get_qrcode,
             get_myinfo,
-            cover_up
+            cover_up,
+            is_vid,
+            show_video,
+            edit_video
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

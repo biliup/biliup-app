@@ -14,6 +14,22 @@
             map = res.streamers;
             for (const streamersKey in map) {
                 map[streamersKey].files = [];
+                if (map[streamersKey]['videos'].length > 0) {
+                    map[streamersKey]['videos'].forEach((value) => {
+                        map[streamersKey]['files'].push({
+                            filename: value.filename,
+                            id: value.filename,
+                            title: value.title,
+                            desc: value.desc,
+                            progress: 100,
+                            uploaded: 0,
+                            speed: 0,
+                            totalSize: 0,
+                            complete: true,
+                            process: false,
+                        });
+                    })
+                }
                 map[streamersKey].atomicInt = 0;
             }
             $template = map;

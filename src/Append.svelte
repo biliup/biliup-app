@@ -36,7 +36,7 @@
     let visible;
 
     $: if (selectedTemplate) {
-        visible = selectedTemplate?.files.length !== 0;
+        visible = selectedTemplate?.files?.length !== 0;
         items = [...selectedTemplate?.files];
     }
 </script>

@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+use futures::future::Aborted;
 use thiserror::Error;
 // use anyhow::Result;
 use serde::{Deserialize, Serialize, Serializer};
@@ -6,6 +8,10 @@ use serde::{Deserialize, Serialize, Serializer};
 pub enum Error {
     #[error("{0}")]
     Err(String),
+    #[error(transparent)]
+    Aborted(#[from] Aborted),
+    #[error(transparent)]
+    ParseIntError(#[from] ParseIntError),
     #[error(transparent)]
     ReqIO(#[from] reqwest::Error),
     #[error(transparent)]
@@ -59,7 +65,9 @@ impl Serialize for Error {
             Error::ReqIO(e) => serializer.serialize_str(&e.to_string()),
             Error::YamlIO(e) => serializer.serialize_str(&e.to_string()),
             Error::Err(e) => serializer.serialize_str(&e.to_string()),
+            Error::Aborted(e) => serializer.serialize_str(&e.to_string()),
             Error::JsonIO(e) => serializer.serialize_str(&e.to_string()),
+            Error::ParseIntError(e) => serializer.serialize_str(&e.to_string()),
         }
     }
 }

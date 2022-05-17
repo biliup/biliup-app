@@ -3,7 +3,15 @@ use biliup::{Config, User};
 use anyhow::Context;
 use biliup::client::{Client, LoginInfo};
 use std::fmt::Write;
-
+use std::pin::Pin;
+use std::task::Poll;
+use futures::{FutureExt, Stream};
+use std::future::Future;
+use reqwest::Body;
+use bytes::{Buf, Bytes};
+use tauri::Window;
+use tokio::sync::mpsc::UnboundedSender;
+use tokio::sync::mpsc::Sender;
 
 pub mod error;
 
@@ -49,6 +57,58 @@ pub fn encode_hex(bytes: &[u16]) -> String {
         write!(&mut s, "{:x}", b).unwrap();
     }
     s
+}
+
+#[derive(Clone)]
+pub struct Progressbar {
+    bytes: Bytes,
+    tx: UnboundedSender<u64>,
+    // tx: Sender<u64>,
+}
+
+impl Progressbar {
+    pub fn new(bytes: Bytes, tx: UnboundedSender<u64>) -> Self {
+        Self { bytes, tx }
+    }
+
+    pub fn progress(&mut self) -> crate::error::Result<Option<Bytes>> {
+        let pb = &self.tx;
+
+        let content_bytes = &mut self.bytes;
+
+        let n = content_bytes.remaining();
+
+        let pc = 1048576;
+        if n == 0 {
+            Ok(None)
+        } else if n < pc {
+            pb.send(n as u64);
+            Ok(Some(content_bytes.copy_to_bytes(n)))
+        } else {
+            pb.send(pc as u64);
+            Ok(Some(content_bytes.copy_to_bytes(pc)))
+        }
+    }
+}
+
+impl Stream for Progressbar{
+    type Item = crate::error::Result<Bytes>;
+
+    fn poll_next(
+        mut self: Pin<&mut Self>,
+        _cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        match self.progress()? {
+            None => Poll::Ready(None),
+            Some(s) => Poll::Ready(Some(Ok(s))),
+        }
+    }
+}
+
+impl From<Progressbar> for Body {
+    fn from(async_stream: Progressbar) -> Self {
+        Body::wrap_stream(async_stream)
+    }
 }
 
 mod test {

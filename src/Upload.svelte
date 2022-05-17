@@ -123,16 +123,33 @@
         if (!nocopyright) {
             noreprint = noReprint ? 1 : 0;
         }
-        invoke('submit', {
-            studio: {
-                ...selectedTemplate,
-                tag: tags.join(','),
-                dtime: dtime,
-                no_reprint: noreprint,
-            }
-        }).then((res) => {
+        let tag;
+        if (tags.length === 0 ) {
+            tag = "biliup";
+        } else {
+            tag = tags.join(',') + ',biliup';
+        }
+
+        let invokeMethod;
+        let msg;
+        if (selected?.length > 2 && (selected.startsWith('av') || selected.startsWith('BV'))) {
+            invokeMethod = 'edit_video';
+            msg = '编辑';
+        }else {
+            invokeMethod = 'submit';
+            msg = '投稿';
+        }
+        invoke(invokeMethod, {
+                studio: {
+                    ...selectedTemplate,
+                    tag: tag,
+                    dtime: dtime,
+                    no_reprint: noreprint,
+                }
+        })
+        .then((res) => {
             console.log(res);
-            createPop(`${selected}投稿成功`, 5000, 'Success');
+            createPop(`${selected} - ${msg}成功`, 5000, 'Success');
         }).catch((e) => {
                 createPop(e, 5000);
                 console.log(e);
@@ -176,6 +193,9 @@
         parent = detailParent;
         children = detailChildren;
     }
+    if (selectedTemplate.dtime === 0) {
+        selectedTemplate.dtime = null;
+    }
     let dtime;
     let isDtime = selectedTemplate.dtime !== null;
     let date;
@@ -183,7 +203,6 @@
 
     if (isDtime) {
         dtime = new Date(selectedTemplate.dtime * 1000);
-        console.log("121", dtime);
         date = dtime.getFullYear() + '-' + pad(dtime.getMonth() + 1) + '-' + pad(dtime.getDate());
         time = pad(dtime.getHours()) + ':' + pad(dtime.getMinutes());
     }
@@ -195,8 +214,6 @@
 
 
     $: if (isDtime) {
-        console.log(date)
-        console.log(time)
         selectedTemplate.dtime = new Date(`${date} ${time}`).valueOf()/1000;
     } else {
         selectedTemplate.dtime = null;

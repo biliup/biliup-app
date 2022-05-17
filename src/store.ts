@@ -36,7 +36,7 @@ export const fileselect = () => {
     let properties = {
         // defaultPath: 'C:\\',
         multiple: true,
-        // directory: false,
+        directory: false,
         filters: [{
             extensions: ['mp4', 'flv', 'avi', 'wmv', 'mov', 'webm', 'mpeg4', 'ts', 'mpg', 'rm', 'rmvb', 'mkv', 'm4v'],
             name: ""
@@ -70,6 +70,7 @@ export function attach(files) {
                 title: filename.substring(0, filename.lastIndexOf(".")),
                 desc: '',
                 progress: 0,
+                uploaded: 0,
                 speed: 0,
                 totalSize: 0,
                 complete: false,
@@ -100,20 +101,21 @@ function allComplete(files, temp) {
 
 function upload(video, temp) {
     // const files = [];
-
+    video.start = Date.now();
     invoke('upload', {
         video: video
     }).then((res) => {
         // temp.atomicInt--;
-        video.filename = res[0].filename;
-        video.speed = res[1];
-        video.complete = true;
-        video.progress = 100;
+        // video.filename = res[0].filename;
+        // video.speed = res[1];
+        // video.complete = true;
+        // video.progress = 100;
         currentTemplate.update(t => {
             t.selectedTemplate.files.forEach(file => {
                 if (file.id === video.id) {
-                    file.filename = res[0].filename;
-                    file.speed = res[1];
+                    file.filename = res.filename;
+                    const millis = Date.now() - file.start;
+                    file.speed = file.totalSize / 1000 / millis;
                     file.complete = true;
                     file.progress = 100;
                 }
@@ -123,7 +125,6 @@ function upload(video, temp) {
         console.log(`Message:`, res);
     }).catch((e) => {
         createPop(`${video.filename}: ${e}`, 5000);
-        console.log(e);
     }).finally(() => {
         temp.atomicInt--;
         if (allComplete(temp['files'], temp)) {
@@ -148,10 +149,12 @@ export async function progress() {
                 if (file.id === event.payload[0]) {
                     // file.progress = Math.round(event.payload[1] * 100) / 100;
                     // $speed = Math.round(event.payload[1] * 100) / 100;
-                    file.totalSize = event.payload[2]
-                    file.speed = event.payload[3];
+                    file.totalSize = event.payload[2];
+                    const millis = Date.now() - file.start;
+                    file.uploaded += event.payload[1];
+                    file.speed = file.uploaded / 1000 / millis;
                     // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
-                    file.progress = event.payload[1] / file.totalSize * 100;
+                    file.progress = file.uploaded / file.totalSize * 100;
                     if (Math.round(file.progress * 100) === 10000) file.complete = true;
 
                     return cur;

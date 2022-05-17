@@ -46,7 +46,7 @@
                                                 {:else }
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="mr-2 stroke-info flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 {/if}
-                                                <p class="text-gray-700">
+                                                <p class="text-gray-700 break-words max-w-[23rem]">
                                                     { notify.msg }
                                                 </p>
                                             </div>
@@ -70,7 +70,7 @@
                     <div slot="box" class="">
                         <h1 class="text-2xl font-bold text-center">
                             biliup-app
-                            <span class="badge badge-primary">v0.2.2</span>
+                            <span class="badge badge-primary">v0.3.0</span>
                         </h1>
                         <p class="mt-3">
                             欢迎使用，如果操作有一些疑问，可以先查看
