@@ -3,6 +3,10 @@
 [![Telegram](https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram)](https://t.me/+IkpIABHqy6U0ZTQ5)
 
 bilibili投稿客户端，支持Windows，Linux，macOS。
+* 支持多p上传，支持线路切换、并发数控制，上海腾讯云可使用内网线路上传免流+大幅提速。
+* 支持稿件编辑追加多p，可编辑网页端不能编辑的"是否转载"、"投稿分区"等。 
+* 低电磁力等级也可上传大于16G视频，最大32G。
+* 支持多种登录方式，账号密码，短信，扫码，浏览器登录。
 
 使用操作 [演示视频](https://www.zhihu.com/zvideo/1482481163700367361) （非最新版）
 
