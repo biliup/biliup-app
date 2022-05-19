@@ -125,9 +125,9 @@
         }
         let tag;
         if (tags.length === 0 ) {
-            tag = "biliup";
+            tag = "biliup-app";
         } else {
-            tag = tags.join(',') + ',biliup';
+            tag = tags.join(',') + ',biliup-app';
         }
 
         let invokeMethod;
@@ -431,7 +431,7 @@
                 {/each}
 
                 <input bind:value={tempTag} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleKeypress()}
-                       placeholder="标签"
+                       placeholder="标签，回车输入"
                        type="text"/>
             </div>
             <div class="text-gray-700">
