@@ -7,6 +7,7 @@
     import {open} from "@tauri-apps/api/shell";
     import {configDir} from "@tauri-apps/api/path";
     import Modal from "./Modal.svelte";
+    import {createPop} from "./common";
 
     let face = 'noface.jpg';
     let name = null;
@@ -34,9 +35,16 @@
     export let items = [];
 
     async function add() {
+        tempName = tempName?.trim();
         if (tempName?.length > 2 && (tempName.startsWith('av') || tempName.startsWith('BV'))) {
             if (await invoke('is_vid', {input: tempName})) {
-                $template[tempName] = await invoke('show_video', {input: tempName});
+                try {
+                    $template[tempName] = await invoke('show_video', {input: tempName});
+                } catch (e) {
+                    tempName = null;
+                    createPop(e, 5000);
+                    return;
+                }
                 $template[tempName]['files'] = [];
                 $template[tempName]['videos'].forEach((value) => {
                     $template[tempName]['files'].push({
@@ -56,6 +64,7 @@
                 let res = await invoke('load');
                 res.streamers = $template;
                 await invoke('save', {config: res});
+                tempName = null;
                 return;
             }
         }
