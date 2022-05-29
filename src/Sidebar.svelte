@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {currentTemplate, template} from "./store.ts";
+    import {currentTemplate, template, save_config} from "./store.ts";
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
     import {invoke} from "@tauri-apps/api/tauri";
@@ -61,9 +61,9 @@
                     });
                 })
                 $template[tempName].atomicInt = 0;
-                let res = await invoke('load');
-                res.streamers = $template;
-                await invoke('save', {config: res});
+                await save_config((ret) => {
+                    ret.streamers = $template;
+                })
                 tempName = null;
                 return;
             }
@@ -89,9 +89,9 @@
             atomicInt: 0
         };
         // $currentTemplate = $template[name];
-        let res = await invoke('load');
-        res.streamers = $template;
-        await invoke('save', {config: res});
+        await save_config((ret) => {
+            ret.streamers = $template;
+        })
         tempName = null;
     }
 
@@ -119,15 +119,14 @@
     }
 
     async function saveSettings() {
-        let ret = await invoke('load');
-        console.log(ret);
-        if (line === 'auto') {
-            ret.line = null;
-        } else {
-            ret.line = line;
-        }
-        ret.limit = limit;
-        await invoke('save', {config: ret});
+        await save_config((ret) => {
+            if (line === 'auto') {
+                ret.line = null;
+            } else {
+                ret.line = line;
+            }
+            ret.limit = limit;
+        })
     }
 
     let tempName: string;

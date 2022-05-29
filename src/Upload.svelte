@@ -1,6 +1,6 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {receive, template} from './store.ts';
+    import {receive, save_config, template} from './store.ts';
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
@@ -42,36 +42,20 @@
         delete $template[selected];
         $template = $template;
         console.log($template);
-        try {
-            let res = await invoke('load',)
-            res = await invoke('save', {
-                config: {
-                    user: res.user,
-                    streamers: $template,
-                }
-            })
-            createPop('移除成功', 2000, 'Success');
-        } catch (e) {
-            console.log(e);
-            createPop(e, 5000);
-        }
+        await save_config((ret) => {
+            ret.streamers = $template;
+        })
+        createPop('移除成功', 2000, 'Success');
     }
 
     async function save() {
         // console.log({[selected]: config});
-        try {
-            let res = await invoke('load',)
-            res.streamers = $template;
-            res = await invoke('save', {
-                config: res
-            })
-            selectedTemplate.changed = false;
-            $template = $template;
-            createPop('保存成功', 5000, 'Success');
-        } catch (e) {
-            createPop(e, 5000);
-            console.log(e);
-        }
+        await save_config((ret) => {
+            ret.streamers = $template;
+        })
+        selectedTemplate.changed = false;
+        $template = $template;
+        createPop('保存成功', 5000, 'Success');
     }
 
     // console.log()

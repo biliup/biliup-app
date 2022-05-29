@@ -7,13 +7,38 @@ use std::pin::Pin;
 use std::task::Poll;
 use futures::{FutureExt, Stream};
 use std::future::Future;
+use std::rc::Rc;
 use reqwest::Body;
 use bytes::{Buf, Bytes};
-use tauri::Window;
+use tauri::{App, Window};
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::sync::mpsc::Sender;
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 
 pub mod error;
+
+#[derive(Default)]
+pub struct Credential {
+    pub credential: Mutex<Option<Arc<(LoginInfo, Client)>>>
+}
+
+impl Credential {
+    pub async fn get_credential(&self) -> error::Result<Arc<(LoginInfo, Client)>> {
+        let mut guard = self.credential.lock().await;
+        if guard.is_none() {
+            let client = Client::new();
+            let login_info = client
+                .login_by_cookies(std::fs::File::open(cookie_file()?)?)
+                .await?;
+            let arc = Arc::new((login_info, client));
+            *guard = Some(arc.clone());
+            Ok(arc.clone())
+        } else {
+            Ok(guard.as_ref().unwrap().clone())
+        }
+    }
+}
 
 pub fn config_file() -> error::Result<PathBuf> {
     Ok(config_path()?.join("config.yaml"))
@@ -29,7 +54,7 @@ pub fn config_path() -> error::Result<PathBuf> {
     if !config_dir.exists() {
         std::fs::create_dir(&config_dir)?;
     }
-    println!("{config_dir:?}");
+    println!("config_path: {config_dir:?}");
     Ok(config_dir)
 }
 
@@ -41,14 +66,6 @@ pub async fn login_by_password(username: &str, password: &str) -> anyhow::Result
     serde_json::to_writer_pretty(&file, &info)?;
     println!("密码登录成功，数据保存在{:?}", file);
     Ok(())
-}
-
-pub async fn login_by_cookies() -> anyhow::Result<(LoginInfo, Client)> {
-    let client = Client::new();
-    let login_info = client
-        .login_by_cookies(std::fs::File::open(cookie_file()?)?)
-        .await?;
-    Ok((login_info, client))
 }
 
 pub fn encode_hex(bytes: &[u16]) -> String {
@@ -114,6 +131,5 @@ impl From<Progressbar> for Body {
 mod test {
     #[test]
     fn test_hex() {
-
     }
 }

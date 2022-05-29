@@ -5,6 +5,7 @@
     import Modal from "./Modal.svelte";
     import Pop from "./Pop.svelte";
     import {notifyHistory} from "./common";
+    import {getVersion} from "@tauri-apps/api/app";
 	// import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 
 	// overrideItemIdKeyNameBeforeInitialisingDndZones("filename");
@@ -70,7 +71,13 @@
                     <div slot="box" class="">
                         <h1 class="text-2xl font-bold text-center">
                             biliup-app
-                            <span class="badge badge-primary">v0.3.0</span>
+                            <span class="badge badge-primary">
+                                {#await getVersion()}
+                                    waiting for the promise to resolve...
+                                {:then value}
+                                    v{value}
+                                {/await}
+                            </span>
                         </h1>
                         <p class="mt-3">
                             欢迎使用，如果操作有一些疑问，可以先查看

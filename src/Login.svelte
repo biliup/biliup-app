@@ -2,7 +2,7 @@
     import {isLogin} from './store.js';
     import {fade, scale} from 'svelte/transition';
     import {invoke} from '@tauri-apps/api/tauri';
-    import {createPop} from "./common";
+    import {createPop, notifyHistory} from "./common";
     import QrCode from "svelte-qrcode";
     import {open} from "@tauri-apps/api/shell";
 
@@ -22,7 +22,11 @@
         .then((res) => {
             isLogin.set(true);
             console.log(`Message: ${res}`)
-        }).catch((e) => createPop(e, 5000));
+        }).catch((e) => $notifyHistory = [...$notifyHistory, {
+        type: 'Error',
+        msg: e,
+        date: new Date(),
+    }]);
     invoke('load')
         .then((res) => {
             username = res.user.account.username;

@@ -5,6 +5,7 @@ import {invoke} from "@tauri-apps/api/tauri";
 import {crossfade, fly} from "svelte/transition";
 import {listen} from "@tauri-apps/api/event";
 import {createPop} from "./common";
+import {selectedTemplate} from "./Upload.svelte";
 
 
 export const isLogin = writable(false);
@@ -163,4 +164,17 @@ export async function progress() {
             return cur;
         })
     });
+}
+
+export async function save_config(fn) {
+    try {
+        let res = await invoke('load',)
+        fn(res);
+        return await invoke('save', {
+            config: res
+        });
+    } catch (e) {
+        createPop(e, 5000);
+        console.log(e);
+    }
 }

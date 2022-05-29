@@ -11,7 +11,6 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::task::Poll;
 use std::time::Instant;
-
 use anyhow::{anyhow, bail, Context};
 use biliup::{Account, Config, line, User, VideoFile};
 use biliup::client::{Client, LoginInfo};
@@ -19,10 +18,8 @@ use biliup::video::{BiliBili, Studio, Video};
 use bytes::Buf;
 use futures::future::abortable;
 use futures::stream::Abortable;
-use tauri::{Manager, Window};
-
-// use app::video::{BiliBili, Client, LoginInfo, Studio, Video};
-use app::{config_file, cookie_file, encode_hex, login_by_cookies};
+use tauri::{Manager, State, Window};
+use app::{config_file, cookie_file, Credential, encode_hex};
 use app::error;
 use app::error::Result;
 use futures::StreamExt;
@@ -59,14 +56,12 @@ fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
             }
         }
     }
-    // println!("body = {:?}", client);
     Ok("登录成功".into())
 }
 
 #[tauri::command]
-async fn login_by_cookie() -> Result<String> {
-    login_by_cookies().await?;
-    // println!("body = {:?}", client);
+async fn login_by_cookie(credential: tauri::State<'_, Credential>) -> Result<String> {
+    credential.get_credential().await?;
     Ok("登录成功".into())
 }
 
@@ -82,7 +77,6 @@ async fn login_by_sms(code: u32, res: serde_json::Value) -> Result<String> {
 #[tauri::command]
 async fn send_sms(country_code: u32, phone: u64) -> Result<serde_json::Value> {
     let ret = Client::new().send_sms(phone, country_code).await?;
-    // println!("body = {:?}", client);
     Ok(ret)
 }
 
@@ -98,14 +92,12 @@ async fn login_by_qrcode(res: serde_json::Value) -> Result<String> {
 #[tauri::command]
 async fn get_qrcode() -> Result<serde_json::Value> {
     let qrcode = Client::new().get_qrcode().await?;
-    // println!("body = {:?}", client);
     Ok(qrcode)
 }
 
-
 #[tauri::command]
-async fn upload(mut video: Video, window: Window) -> Result<Video> {
-    let (_, client) = login_by_cookies().await?;
+async fn upload(mut video: Video, window: Window, credential: tauri::State<'_, Credential>) -> Result<Video> {
+    let (_, client) = &*credential.get_credential().await?;
 
     let config = load()?;
     let probe = if let Some(line) = config.line {
@@ -132,7 +124,7 @@ async fn upload(mut video: Video, window: Window) -> Result<Video> {
     let (tx, mut rx) = mpsc::unbounded_channel();
     // let (tx, mut rx) = mpsc::channel(1);
 
-    let f_video = parcel.upload(&client, limit, |vs| {
+    let f_video = parcel.upload(client, limit, |vs| {
         vs.map(|chunk| {
             let (chunk, len) = chunk?;
             let progressbar = app::Progressbar::new(chunk, tx.clone());
@@ -164,41 +156,34 @@ async fn upload(mut video: Video, window: Window) -> Result<Video> {
 }
 
 #[tauri::command]
-async fn submit(mut studio: Studio) -> Result<serde_json::Value> {
-    let (login_info, _) = login_by_cookies().await?;
-    let ret = studio.submit(&login_info).await?;
-    // let bili = BiliBili::new((client, login_info));
-    // let mut bilibili = bili.submit(studio).await?;
+async fn submit(mut studio: Studio, credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
+    let (login_info, _) = &*credential.get_credential().await?;
+    let ret = studio.submit(login_info).await?;
     Ok(ret)
 }
 
 #[tauri::command]
-async fn archive_pre() -> Result<serde_json::Value> {
-    let (login_info, client) = login_by_cookies().await?;
-    let bili = BiliBili::new(&login_info, &client);
+async fn archive_pre(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
+    let (login_info, client) = &*credential.get_credential().await?;
+    let bili = BiliBili::new(login_info, client);
     Ok(bili.archive_pre().await?)
 }
 
 #[tauri::command]
-async fn get_myinfo() -> Result<serde_json::Value> {
-    let (_, client) = login_by_cookies().await?;
+async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
+    let (_, client) = &*credential.get_credential().await?;
     Ok(client.client.get("https://api.bilibili.com/x/space/myinfo").send().await?.json().await?)
 }
 
 #[tauri::command]
 fn load_account() -> Result<User> {
-    // let file = std::fs::File::open("config.yaml")?;
-    // let user: User = serde_yaml::from_reader(file)?;
-    // println!("body = {:?}", client);
     Ok(load()?.user.ok_or(error::Error::Err("账号信息不存在".into()))?)
 }
 
 #[tauri::command]
 fn save(config: Config) -> Result<Config> {
     let file = std::fs::File::create(config_file()?)?;
-    // let config: Config = serde_yaml::from_reader(file)?;
-    serde_yaml::to_writer(file, &config);
-    // println!("body = {:?}", client);
+    serde_yaml::to_writer(file, &config)?;
     Ok(config)
 }
 
@@ -206,13 +191,12 @@ fn save(config: Config) -> Result<Config> {
 fn load() -> Result<Config> {
     let file = std::fs::File::open(config_file()?).with_context(|| "biliup/config.yaml")?;
     let config: Config = serde_yaml::from_reader(file)?;
-    // println!("body = {:?}", client);
     Ok(config)
 }
 
 #[tauri::command]
-async fn cover_up(input: Cow<'_, [u8]>) -> Result<String> {
-    let (login_info, client) = login_by_cookies().await?;
+async fn cover_up(input: Cow<'_, [u8]>, credential: tauri::State<'_, Credential>) -> Result<String> {
+    let (login_info, client) = &*credential.get_credential().await?;
     let bili = BiliBili::new(&login_info, &client);
     let url = bili.cover_up(&input).await?;
     Ok(url)
@@ -224,9 +208,9 @@ fn is_vid(input: &str) -> bool {
 }
 
 #[tauri::command]
-async fn show_video(input: &str) -> Result<Studio> {
-    let (login_info, client) = login_by_cookies().await?;
-    let bili = BiliBili::new(&login_info, &client);
+async fn show_video(input: &str, credential: tauri::State<'_, Credential>) -> Result<Studio> {
+    let (login_info, client) = &*credential.get_credential().await?;;
+    let bili = BiliBili::new(login_info, client);
     let mut data = bili.video_data(biliup::video::Vid::from_str(input)?).await?;
     let mut studio: Studio = serde_json::from_value(data["archive"].take())?;
     studio.videos = data["videos"]
@@ -243,9 +227,9 @@ async fn show_video(input: &str) -> Result<Studio> {
 }
 
 #[tauri::command]
-async fn edit_video(mut studio: Studio) -> Result<serde_json::Value> {
-    let (login_info, _) = login_by_cookies().await?;
-    let ret = studio.edit(&login_info).await?;
+async fn edit_video(mut studio: Studio, credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
+    let (login_info, _) = &*credential.get_credential().await?;
+    let ret = studio.edit(login_info).await?;
     Ok(ret)
 }
 
@@ -270,6 +254,7 @@ fn main() {
             show_video,
             edit_video
         ])
+        .manage(Credential::default())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
