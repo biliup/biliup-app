@@ -13,30 +13,31 @@ use bytes::{Buf, Bytes};
 use tauri::{App, Window};
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::sync::mpsc::Sender;
-use std::sync::{Arc};
+use std::sync::{Arc, RwLock};
 use tokio::sync::Mutex;
 
 pub mod error;
 
 #[derive(Default)]
 pub struct Credential {
-    pub credential: Mutex<Option<Arc<(LoginInfo, Client)>>>
+    pub credential: RwLock<Option<Arc<(LoginInfo, Client)>>>
 }
 
 impl Credential {
     pub async fn get_credential(&self) -> error::Result<Arc<(LoginInfo, Client)>> {
-        let mut guard = self.credential.lock().await;
-        if guard.is_none() {
-            let client = Client::new();
-            let login_info = client
-                .login_by_cookies(std::fs::File::open(cookie_file()?)?)
-                .await?;
-            let arc = Arc::new((login_info, client));
-            *guard = Some(arc.clone());
-            Ok(arc.clone())
-        } else {
-            Ok(guard.as_ref().unwrap().clone())
+        {
+            let read_guard = self.credential.read().unwrap();
+            if !read_guard.is_none() {
+                return Ok(read_guard.as_ref().unwrap().clone());
+            }
         }
+        let client = Client::new();
+        let login_info = client
+            .login_by_cookies(std::fs::File::open(cookie_file()?)?)
+            .await?;
+        let arc = Arc::new((login_info, client));
+        *self.credential.write().unwrap() = Some(arc.clone());
+        Ok(arc)
     }
 }
 
