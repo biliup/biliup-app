@@ -72,6 +72,7 @@ export function attach(files) {
                 desc: '',
                 progress: 0,
                 uploaded: 0,
+                speed_uploaded: 0,
                 speed: 0,
                 totalSize: 0,
                 complete: false,
@@ -151,9 +152,7 @@ export async function progress() {
                     // file.progress = Math.round(event.payload[1] * 100) / 100;
                     // $speed = Math.round(event.payload[1] * 100) / 100;
                     file.totalSize = event.payload[2];
-                    const millis = Date.now() - file.start;
-                    file.uploaded += event.payload[1];
-                    file.speed = file.uploaded / 1000 / millis;
+                    file.uploaded = event.payload[1];
                     // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
                     file.progress = file.uploaded / file.totalSize * 100;
                     if (Math.round(file.progress * 100) === 10000) file.complete = true;
@@ -164,6 +163,31 @@ export async function progress() {
             return cur;
         })
     });
+
+}
+export async function speed() {
+    return await listen('speed', event => {
+        // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
+        // event.payload is the payload object
+        // console.log('!', event);
+        currentTemplate.update((cur) => {
+            for (const file of cur.selectedTemplate['files']) {
+                if (file.id === event.payload[0]) {
+                    // file.progress = Math.round(event.payload[1] * 100) / 100;
+                    // $speed = Math.round(event.payload[1] * 100) / 100;
+                    file.totalSize = event.payload[2];
+                    const millis = Date.now() - file.start;
+                    file.speed_uploaded += event.payload[1];
+                    file.speed = file.speed_uploaded / 1000 / millis;
+                    // file.progress.ldBar.set(Math.round(event.payload[1] * 100) / 100);
+
+                    return cur;
+                }
+            }
+            return cur;
+        })
+    });
+
 }
 
 export async function save_config(fn) {

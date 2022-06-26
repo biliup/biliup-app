@@ -1,7 +1,7 @@
 <script lang="ts">
     import Sidebar from './Sidebar.svelte';
     import Upload from './Upload.svelte';
-    import {attach, progress, template, currentTemplate} from "./store";
+    import {attach, progress,speed, template, currentTemplate} from "./store";
     import {listen} from "@tauri-apps/api/event";
     import {invoke} from "@tauri-apps/api/tauri";
     import {createPop} from "./common";
@@ -23,6 +23,7 @@
                             desc: value.desc,
                             progress: 100,
                             uploaded: 0,
+                            speed_uploaded:0,
                             speed: 0,
                             totalSize: 0,
                             complete: true,
@@ -46,6 +47,7 @@
     let fileHover = writable(false);
     setContext("hover", fileHover);
     progress();
+    speed();
     listen("tauri://file-drop", (date) => {
         console.log("1", date);
         attach(date.payload);

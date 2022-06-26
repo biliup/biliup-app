@@ -54,6 +54,7 @@
                         desc: value.desc,
                         progress: 100,
                         uploaded: 0,
+                        speed_uploaded: 0,
                         speed: 0,
                         totalSize: 0,
                         complete: true,
@@ -69,6 +70,10 @@
             }
         }
         let name = tempName ?? '未命名模板' + Object.keys($template).length;
+        if (name in $template) {
+            createPop('模板名称已存在', 5000);
+            return;
+        }
         $template[name] = {
             title: '',
             files: [],

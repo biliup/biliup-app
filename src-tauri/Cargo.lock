@@ -170,9 +170,9 @@ checksum = "e6b4d9b1225d28d360ec6a231d65af1fd99a2a095154c8040689617290569c5c"
 
 [[package]]
 name = "biliup"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54417ad41441d0f1d25235cac196681ec8d62b24f8ba4e36b7562076723785cc"
+checksum = "9b034d8b3d8e78a6456d3466340b752f59de02372d1e9ccda24e31f3926f631c"
 dependencies = [
  "anyhow",
  "base64",
