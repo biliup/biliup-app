@@ -1,6 +1,6 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {receive, save_config, template} from './store.ts';
+    import {receive,currentTemplate, save_config, template} from './store.ts';
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
@@ -39,7 +39,23 @@
     }
 
     async function del() {
+        let len = Object.keys($template).length;
+        const keys = Object.keys($template);
+        const index = keys.indexOf(selected);
+        if (len==1){
+            createPop("已经是最后一个模板无法删除");
+            return;
+        }
         delete $template[selected];
+        if (len > 1) {
+            selected = keys[index + 1] || keys[index - 1];
+            $currentTemplate.selectedTemplate = $template[selected];
+            $currentTemplate.current = selected;
+        } else {
+            selected = '';
+            $currentTemplate.selectedTemplate = null;
+            $currentTemplate.current = '';
+        }
         $template = $template;
         console.log($template);
         await save_config((ret) => {
@@ -156,6 +172,11 @@
     function handleKeypress() {
         if (tags.includes(tempTag)) {
             createPop("已有相同标签");
+            tempTag = null;
+            return;
+        }
+        if(tags.length > 10) {
+            createPop("标签数量超过10个，无法添加");
             tempTag = null;
             return;
         }

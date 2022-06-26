@@ -122,12 +122,15 @@ async fn upload(mut video: Video, window: Window, credential: tauri::State<'_, C
     let total_size = video_file.total_size;
     let parcel = probe.to_uploader(video_file);
     let (tx, mut rx) = mpsc::unbounded_channel();
+    let (tx2, mut rx2) = mpsc::unbounded_channel();
     // let (tx, mut rx) = mpsc::channel(1);
-
+    let mut uploaded = 0;
     let f_video = parcel.upload(client, limit, |vs| {
         vs.map(|chunk| {
             let (chunk, len) = chunk?;
-            let progressbar = app::Progressbar::new(chunk, tx.clone());
+            uploaded += len;
+            tx.send(uploaded).unwrap();
+            let progressbar = app::Progressbar::new(chunk, tx2.clone());
             Ok((progressbar, len))
         })
     });
@@ -137,13 +140,31 @@ async fn upload(mut video: Video, window: Window, credential: tauri::State<'_, C
         println!("got window event-name with payload {:?}", event.payload());
         // is_remove.store(false, Ordering::Relaxed);
     });
+    let f2 =filename.clone();
+    let w2 = window.clone();
+    //fixme
+    //使用progressbar返回上传进度遇到错误触发重传时，会重新往channel2中写入信息，导致进度条超过100%，故使用channel1来传输进度。
+    //而channel1每10MB左右才会传输一次进度，故保留channel1的信息来计算速度。
     tokio::spawn(async move {
-        while let Some(len) = rx.recv().await {
+        while let Some(uploaded) = rx.recv().await {
             window
                 .emit(
                     "progress",
                     (
                         &filename,
+                        uploaded,
+                        total_size,
+                    ),
+                ).unwrap();
+        }
+    });
+    tokio::spawn(async move {
+        while let Some(len) = rx2.recv().await {
+            w2
+                .emit(
+                    "speed",
+                    (
+                        &f2,
                         len,
                         total_size
                     ),
