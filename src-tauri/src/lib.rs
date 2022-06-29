@@ -60,7 +60,6 @@ pub fn config_path() -> error::Result<PathBuf> {
 }
 
 
-#[tokio::main]
 pub async fn login_by_password(username: &str, password: &str) -> anyhow::Result<()> {
     let info = Client::new().login_by_password(username, password).await?;
     let file = std::fs::File::create(cookie_file()?)?;

@@ -24,11 +24,11 @@ use app::error;
 use app::error::Result;
 use futures::StreamExt;
 use tokio::sync::mpsc;
-
+use tauri::async_runtime;
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
-    app::login_by_password(username, password)?;
+    async_runtime::block_on(app::login_by_password(username, password))?;
     if remember_me {
         match load() {
             Ok(mut config) => {

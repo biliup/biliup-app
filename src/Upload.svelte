@@ -123,12 +123,8 @@
         if (!nocopyright) {
             noreprint = noReprint ? 1 : 0;
         }
-        let tag;
-        if (tags.length === 0 ) {
-            tag = "biliup-app";
-        } else {
-            tag = tags.join(',') + ',biliup-app';
-        }
+
+        let tag = tags.join(',');
 
         let invokeMethod;
         let msg;
@@ -175,8 +171,8 @@
             tempTag = null;
             return;
         }
-        if(tags.length > 10) {
-            createPop("标签数量超过10个，无法添加");
+        if(tags.length > 12) {
+            createPop("标签数量超过12个，无法添加");
             tempTag = null;
             return;
         }
