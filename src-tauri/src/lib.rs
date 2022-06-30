@@ -1,20 +1,20 @@
 use std::path::PathBuf;
-use biliup::{Config, User};
-use anyhow::Context;
+
+
 use biliup::client::{Client, LoginInfo};
 use std::fmt::Write;
 use std::pin::Pin;
 use std::task::Poll;
-use futures::{FutureExt, Stream};
-use std::future::Future;
-use std::rc::Rc;
+use futures::{Stream};
+
+
 use reqwest::Body;
 use bytes::{Buf, Bytes};
-use tauri::{App, Window};
+
 use tokio::sync::mpsc::UnboundedSender;
-use tokio::sync::mpsc::Sender;
+
 use std::sync::{Arc, RwLock};
-use tokio::sync::Mutex;
+
 
 pub mod error;
 
@@ -99,10 +99,10 @@ impl Progressbar {
         if n == 0 {
             Ok(None)
         } else if n < pc {
-            pb.send(n as u64);
+            pb.send(n as u64)?;
             Ok(Some(content_bytes.copy_to_bytes(n)))
         } else {
-            pb.send(pc as u64);
+            pb.send(pc as u64)?;
             Ok(Some(content_bytes.copy_to_bytes(pc)))
         }
     }

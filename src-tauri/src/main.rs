@@ -4,21 +4,20 @@ windows_subsystem = "windows"
 )]
 
 use std::borrow::Cow;
-use std::cell::Cell;
+
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::task::Poll;
-use std::time::Instant;
-use anyhow::{anyhow, bail, Context};
+
+
+
+
+use anyhow::{Context};
 use biliup::{Account, Config, line, User, VideoFile};
-use biliup::client::{Client, LoginInfo};
+use biliup::client::{Client};
 use biliup::video::{BiliBili, Studio, Video};
-use bytes::Buf;
 use futures::future::abortable;
-use futures::stream::Abortable;
-use tauri::{Manager, State, Window};
+
+use tauri::Window;
 use app::{config_file, cookie_file, Credential, encode_hex};
 use app::error;
 use app::error::Result;
@@ -135,7 +134,7 @@ async fn upload(mut video: Video, window: Window, credential: tauri::State<'_, C
         })
     });
     let (a_video, abort_handle) = abortable(f_video);
-    let id = window.once(encode_hex(filename.encode_utf16().collect::<Vec<u16>>().as_slice()), move |event| {
+    let _id = window.once(encode_hex(filename.encode_utf16().collect::<Vec<u16>>().as_slice()), move |event| {
         abort_handle.abort();
         println!("got window event-name with payload {:?}", event.payload());
         // is_remove.store(false, Ordering::Relaxed);
@@ -198,7 +197,7 @@ async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_js
 
 #[tauri::command]
 fn load_account() -> Result<User> {
-    Ok(load()?.user.ok_or(error::Error::Err("账号信息不存在".into()))?)
+    load()?.user.ok_or(error::Error::Err("账号信息不存在".into()))
 }
 
 #[tauri::command]
@@ -218,7 +217,7 @@ fn load() -> Result<Config> {
 #[tauri::command]
 async fn cover_up(input: Cow<'_, [u8]>, credential: tauri::State<'_, Credential>) -> Result<String> {
     let (login_info, client) = &*credential.get_credential().await?;
-    let bili = BiliBili::new(&login_info, &client);
+    let bili = BiliBili::new(login_info, client);
     let url = bili.cover_up(&input).await?;
     Ok(url)
 }
@@ -230,7 +229,7 @@ fn is_vid(input: &str) -> bool {
 
 #[tauri::command]
 async fn show_video(input: &str, credential: tauri::State<'_, Credential>) -> Result<Studio> {
-    let (login_info, client) = &*credential.get_credential().await?;;
+    let (login_info, client) = &*credential.get_credential().await?;
     let bili = BiliBili::new(login_info, client);
     let mut data = bili.video_data(biliup::video::Vid::from_str(input)?).await?;
     let mut studio: Studio = serde_json::from_value(data["archive"].take())?;

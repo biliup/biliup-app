@@ -2,7 +2,7 @@ use std::num::ParseIntError;
 use futures::future::Aborted;
 use thiserror::Error;
 // use anyhow::Result;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Serialize, Serializer};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -20,6 +20,8 @@ pub enum Error {
     JsonIO(#[from] serde_json::Error),
     #[error(transparent)]
     IO(#[from] std::io::Error),
+    #[error(transparent)]
+    SendError(#[from] tokio::sync::mpsc::error::SendError<u64>),
     #[error(transparent)]
     Other(#[from] anyhow::Error), // source and Display delegate to anyhow::Error
 }
@@ -64,10 +66,11 @@ impl Serialize for Error {
             Error::Other(other) => serializer.serialize_str(&other.to_string()),
             Error::ReqIO(e) => serializer.serialize_str(&e.to_string()),
             Error::YamlIO(e) => serializer.serialize_str(&e.to_string()),
-            Error::Err(e) => serializer.serialize_str(&e.to_string()),
+            Error::Err(e) => serializer.serialize_str(e),
             Error::Aborted(e) => serializer.serialize_str(&e.to_string()),
             Error::JsonIO(e) => serializer.serialize_str(&e.to_string()),
             Error::ParseIntError(e) => serializer.serialize_str(&e.to_string()),
+            Error::SendError(e) => serializer.serialize_str(&e.to_string())
         }
     }
 }
