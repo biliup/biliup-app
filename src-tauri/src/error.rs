@@ -1,5 +1,6 @@
-use std::num::ParseIntError;
+use biliup::error::CustomError;
 use futures::future::Aborted;
+use std::num::ParseIntError;
 use thiserror::Error;
 // use anyhow::Result;
 use serde::{Serialize, Serializer};
@@ -8,6 +9,8 @@ use serde::{Serialize, Serializer};
 pub enum Error {
     #[error("{0}")]
     Err(String),
+    #[error(transparent)]
+    Error(#[from] CustomError),
     #[error(transparent)]
     Aborted(#[from] Aborted),
     #[error(transparent)]
@@ -26,51 +29,13 @@ pub enum Error {
     Other(#[from] anyhow::Error), // source and Display delegate to anyhow::Error
 }
 
-// #[derive(Error, Debug, Serialize, Display)]
-// pub struct MyError {
-//   msg: String,
-//   #[source]  // optional if field name is `source`
-//   source: anyhow::Error,
-// }
-// #[derive(Error, Debug, Serialize)]
-// #[error("{msg}")]
-// pub struct MyError {
-//   msg: String,
-//   // backtrace: Backtrace,
-//   #[serde(skip)]
-//   // #[from]  // optional if field name is `source`
-//   source: reqwest::Error,
-// }
-//
-// impl From<reqwest::Error> for MyError {
-//   fn from(err: reqwest::Error) -> MyError {
-//     MyError { msg: err.to_string(), source: err }
-//   }
-// }
-// impl <E> From<E> for Error
-//     where
-//         E: std::error::Error + Send + Sync + 'static,
-// {
-//     fn from(err: E) -> Error {
-//         Error::Other(anyhow::Error::from(err))
-//     }
-// }
-
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         match self {
-            Error::IO(io) => serializer.serialize_str( &io.to_string()),
-            Error::Other(other) => serializer.serialize_str(&other.to_string()),
-            Error::ReqIO(e) => serializer.serialize_str(&e.to_string()),
-            Error::YamlIO(e) => serializer.serialize_str(&e.to_string()),
-            Error::Err(e) => serializer.serialize_str(e),
-            Error::Aborted(e) => serializer.serialize_str(&e.to_string()),
-            Error::JsonIO(e) => serializer.serialize_str(&e.to_string()),
-            Error::ParseIntError(e) => serializer.serialize_str(&e.to_string()),
-            Error::SendError(e) => serializer.serialize_str(&e.to_string())
+            e @ _ => serializer.serialize_str(&e.to_string()),
         }
     }
 }

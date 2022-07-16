@@ -1,26 +1,23 @@
 use std::path::PathBuf;
 
-
 use biliup::client::{Client, LoginInfo};
+use futures::Stream;
 use std::fmt::Write;
 use std::pin::Pin;
 use std::task::Poll;
-use futures::{Stream};
 
-
-use reqwest::Body;
 use bytes::{Buf, Bytes};
+use reqwest::Body;
 
 use tokio::sync::mpsc::UnboundedSender;
 
 use std::sync::{Arc, RwLock};
 
-
 pub mod error;
 
 #[derive(Default)]
 pub struct Credential {
-    pub credential: RwLock<Option<Arc<(LoginInfo, Client)>>>
+    pub credential: RwLock<Option<Arc<(LoginInfo, Client)>>>,
 }
 
 impl Credential {
@@ -32,9 +29,11 @@ impl Credential {
             }
         }
         let client = Client::new();
-        let login_info = client
-            .login_by_cookies(std::fs::File::open(cookie_file()?)?)
-            .await?;
+        let file = std::fs::File::options()
+            .read(true)
+            .write(true)
+            .open(cookie_file()?)?;
+        let login_info = client.login_by_cookies(file).await?;
         let arc = Arc::new((login_info, client));
         *self.credential.write().unwrap() = Some(arc.clone());
         Ok(arc)
@@ -50,7 +49,8 @@ pub fn cookie_file() -> error::Result<PathBuf> {
 }
 
 pub fn config_path() -> error::Result<PathBuf> {
-    let mut config_dir = tauri::api::path::config_dir().ok_or(error::Error::Err("config_dir".to_string()))?;
+    let mut config_dir =
+        tauri::api::path::config_dir().ok_or(error::Error::Err("config_dir".to_string()))?;
     config_dir.push("biliup");
     if !config_dir.exists() {
         std::fs::create_dir(&config_dir)?;
@@ -58,7 +58,6 @@ pub fn config_path() -> error::Result<PathBuf> {
     println!("config_path: {config_dir:?}");
     Ok(config_dir)
 }
-
 
 pub async fn login_by_password(username: &str, password: &str) -> anyhow::Result<()> {
     let info = Client::new().login_by_password(username, password).await?;
@@ -108,7 +107,7 @@ impl Progressbar {
     }
 }
 
-impl Stream for Progressbar{
+impl Stream for Progressbar {
     type Item = crate::error::Result<Bytes>;
 
     fn poll_next(
@@ -130,6 +129,5 @@ impl From<Progressbar> for Body {
 
 mod test {
     #[test]
-    fn test_hex() {
-    }
+    fn test_hex() {}
 }

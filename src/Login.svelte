@@ -22,11 +22,12 @@
         .then((res) => {
             isLogin.set(true);
             console.log(`Message: ${res}`)
-        }).catch((e) => $notifyHistory = [...$notifyHistory, {
-        type: 'Error',
-        msg: e,
-        date: new Date(),
-    }]);
+        })
+        .catch((e) => $notifyHistory = [...$notifyHistory, {
+            type: 'Error',
+            msg: e,
+            date: new Date(),
+        }]);
     invoke('load')
         .then((res) => {
             username = res.user.account.username;

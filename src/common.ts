@@ -8,6 +8,7 @@ import {writable} from "svelte/store";
 import Pop from "./Pop.svelte";
 import {check_outros, group_outros, transition_out} from "svelte/internal";
 import Modal from "./Modal.svelte";
+import {invoke} from "@tauri-apps/api";
 
 export let partition = writable(null);
 
@@ -76,6 +77,7 @@ const notificationHistory = [];
 export const notifyHistory = writable(notificationHistory);
 
 export function createPop(msg, duration = 3000, mode = 'Error') {
+    invoke('log', {level: mode, msg: msg})
     notificationHistory.push({
         type: mode,
         msg: msg,
