@@ -26,7 +26,7 @@ tracing-appender = "0.2"
 anyhow = "1.0"
 thiserror = "1.0"
 serde_yaml = "0.8"
-biliup = { version = "0.1.10" }
+biliup = { version = "0.1.11" }
 futures = "0.3.17"
 bytes = "1.1.0"
 
