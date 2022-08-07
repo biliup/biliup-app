@@ -34,9 +34,7 @@ impl Serialize for Error {
     where
         S: Serializer,
     {
-        match self {
-            e @ _ => serializer.serialize_str(&e.to_string()),
-        }
+        serializer.serialize_str(&format!("{:?}", self))
     }
 }
 

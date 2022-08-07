@@ -51,6 +51,9 @@
       "http": {
         "all": true,
         "scope": ["http://**", "https://archive.biliimg.com/*"]
+      },
+      "fs": {
+          "scope": ["$CONFIG/*"]
       }
     },
     "windows": [

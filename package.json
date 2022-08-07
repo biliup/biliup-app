@@ -18,7 +18,7 @@
     "@tauri-apps/cli": "^1.0.0",
     "@tsconfig/svelte": "^2.0.0",
     "autoprefixer": "^10.4.2",
-    "daisyui": "^2.15.0",
+    "daisyui": "^2.22.0",
     "postcss": "^8.4.5",
     "postcss-import": "^14.0.2",
     "postcss-load-config": "^3.1.0",
@@ -31,7 +31,7 @@
     "svelte-check": "^2.0.0",
     "svelte-dnd-action": "^0.9.12",
     "svelte-preprocess": "^4.9.8",
-    "tailwindcss": "^3.0.16",
+    "tailwindcss": "^3.1.7",
     "tslib": "^2.0.0",
     "typescript": "^4.0.0"
   },

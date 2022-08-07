@@ -34,9 +34,22 @@ impl Credential {
             .write(true)
             .open(cookie_file()?)?;
         let login_info = client.login_by_cookies(file).await?;
+        let myinfo: serde_json::Value = client
+            .client
+            .get("https://api.bilibili.com/x/space/myinfo")
+            .send()
+            .await?
+            .json()
+            .await?;
+        let user = config_path()?.join(format!("users/{}.json", myinfo["data"]["mid"]));
+        user_path(user).await?;
         let arc = Arc::new((login_info, client));
         *self.credential.write().unwrap() = Some(arc.clone());
         Ok(arc)
+    }
+
+    pub fn clear(&self) {
+        *self.credential.write().unwrap() = None;
     }
 }
 
@@ -49,14 +62,25 @@ pub fn cookie_file() -> error::Result<PathBuf> {
 }
 
 pub fn config_path() -> error::Result<PathBuf> {
-    let mut config_dir =
-        tauri::api::path::config_dir().ok_or(error::Error::Err("config_dir".to_string()))?;
+    let mut config_dir = tauri::api::path::config_dir()
+        .ok_or_else(|| error::Error::Err("config_dir".to_string()))?;
     config_dir.push("biliup");
     if !config_dir.exists() {
         std::fs::create_dir(&config_dir)?;
     }
     println!("config_path: {config_dir:?}");
     Ok(config_dir)
+}
+
+pub async fn user_path(path: PathBuf) -> error::Result<PathBuf> {
+    let mut users = config_path()?;
+    users.push("users");
+    if !users.exists() {
+        std::fs::create_dir(&users)?;
+    }
+    std::fs::copy(cookie_file()?, &path)?;
+    println!("user_path: {path:?}");
+    Ok(users)
 }
 
 pub async fn login_by_password(username: &str, password: &str) -> anyhow::Result<()> {

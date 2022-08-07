@@ -57,6 +57,11 @@ fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
 }
 
 #[tauri::command]
+fn logout(credential: tauri::State<'_, Credential>) {
+    credential.clear()
+}
+
+#[tauri::command]
 async fn login_by_cookie(credential: tauri::State<'_, Credential>) -> Result<String> {
     credential.get_credential().await?;
     Ok("登录成功".into())
@@ -184,8 +189,19 @@ async fn archive_pre(credential: tauri::State<'_, Credential>) -> Result<serde_j
 }
 
 #[tauri::command]
-async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    let (_, client) = &*credential.get_credential().await?;
+async fn get_myinfo(
+    _credential: tauri::State<'_, Credential>,
+    file_name: String,
+) -> Result<serde_json::Value> {
+    // let (_, client) = &*credential.get_credential().await?;
+    let client = Client::new();
+    let path_buf = config_path()?.join(&file_name);
+    let file = std::fs::File::options()
+        .read(true)
+        .write(true)
+        .open(path_buf)
+        .with_context(|| file_name)?;
+    client.login_by_cookies(file).await?;
     Ok(client
         .client
         .get("https://api.bilibili.com/x/space/myinfo")
@@ -199,7 +215,7 @@ async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_js
 fn load_account() -> Result<User> {
     load()?
         .user
-        .ok_or(error::Error::Err("账号信息不存在".into()))
+        .ok_or_else(|| error::Error::Err("账号信息不存在".into()))
 }
 
 #[tauri::command]
@@ -302,7 +318,8 @@ fn main() {
             is_vid,
             show_video,
             edit_video,
-            log
+            log,
+            logout
         ])
         .manage(Credential::default())
         .run(tauri::generate_context!())
