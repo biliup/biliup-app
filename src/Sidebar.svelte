@@ -176,45 +176,47 @@
 </script>
 <div class="flex flex-col w-72 h-screen px-4 pt-8 bg-inherit overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
-    <div class="flex items-center px-3 -mx-2">
-        <Modal>
-            <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" src="{face}" alt="avatar"/>
-            <div slot="box" let:componentId>
-                <label for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
-                <label for="{componentId}" on:click={processNewUser} class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
-                    <div class="flex items-center space-x-3">
-                        <svg class="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
-<!--                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">-->
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-<!--                        </svg>-->
-                        </svg>
-                        <h3 class="text-slate-900 group-hover:text-white text-sm font-semibold">注销并添加新账号</h3>
+    <div class="flex items-center justify-between">
+        <div class="flex items-center flex-none">
+            <Modal>
+                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" src="{face}" alt="avatar"/>
+                <div slot="box" let:componentId>
+                    <label for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+                    <label for="{componentId}" on:click={processNewUser} class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
+                        <div class="flex items-center space-x-3">
+                            <svg class="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
+                                <!--                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">-->
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                <!--                        </svg>-->
+                            </svg>
+                            <h3 class="text-slate-900 group-hover:text-white text-sm font-semibold">注销并添加新账号</h3>
+                        </div>
+                    </label>
+                    <ul role="list" class="p-6 divide-y divide-slate-200">
+                        {#each people as person}
+                            <!-- Remove top/bottom padding when first/last child -->
+                            <li class="flex items-center py-0.5 first:pt-0 last:pb-0 ">
+                                <img class="h-8 w-8 rounded-full" src="{person.face}" alt="" />
+                                <div class="form-control w-full mx-2">
+                                    <label class="label cursor-pointer">
+                                        <span class="label-text">{person.name}</span>
+                                        <input type="radio" name="radio-6" class="radio checked:bg-blue-500"
+                                               bind:group={user} value={person} checked />
+                                    </label>
+                                </div>
+                            </li>
+                        {/each}
+                    </ul>
+                    <div class="modal-action">
+                        <label for="{componentId}" on:click={processChangeUser} class="btn">切换账号</label>
                     </div>
-                </label>
-                <ul role="list" class="p-6 divide-y divide-slate-200">
-                    {#each people as person}
-                        <!-- Remove top/bottom padding when first/last child -->
-                        <li class="flex items-center py-0.5 first:pt-0 last:pb-0 ">
-                            <img class="h-8 w-8 rounded-full" src="{person.face}" alt="" />
-                            <div class="form-control w-full mx-2">
-                                <label class="label cursor-pointer">
-                                    <span class="label-text">{person.name}</span>
-                                    <input type="radio" name="radio-6" class="radio checked:bg-blue-500"
-                                           bind:group={user} value={person} checked />
-                                </label>
-                            </div>
-                        </li>
-                    {/each}
-                </ul>
-                <div class="modal-action">
-                    <label for="{componentId}" on:click={processChangeUser} class="btn">切换账号</label>
                 </div>
+            </Modal>
+            <div data-tip="打开配置文件夹" class="tooltip">
+                <h4 on:click={openConfigDir} class="ml-2 font-medium text-gray-800 hover:underline truncate max-w-[8rem]">{name}</h4>
             </div>
-        </Modal>
-
-        <div data-tip="打开配置文件夹" class="tooltip">
-            <h4 on:click={openConfigDir} class="mx-2 font-medium text-gray-800 hover:underline truncate">{name}</h4>
         </div>
+
         <Modal>
             <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} >
                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -240,7 +242,6 @@
                     <label for="{componentId}" class="btn">Close</label>
                 </div>
             </div>
-
         </Modal>
 
     </div>

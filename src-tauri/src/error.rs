@@ -44,3 +44,9 @@ impl Serialize for Error {
 //   Other(#[from] #[serde(skip)] reqwest::Error),  // source and Display delegate to anyhow::Error
 // }
 pub type Result<T, E = Error> = core::result::Result<T, E>;
+
+impl From<String> for Error {
+    fn from(s: String) -> Self {
+        Error::Err(s)
+    }
+}

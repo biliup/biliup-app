@@ -93,8 +93,31 @@ async fn login_by_qrcode(res: serde_json::Value) -> Result<String> {
 
 #[tauri::command]
 async fn get_qrcode() -> Result<serde_json::Value> {
-    let qrcode = Client::new().get_qrcode().await?;
-    Ok(qrcode)
+    let mut qrcode = Client::new().get_qrcode().await?;
+    let response = reqwest::ClientBuilder::new()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .unwrap()
+        .get(
+            qrcode
+                .get("data")
+                .and_then(|d| d.get("url"))
+                .and_then(|u| u.as_str())
+                .ok_or_else(|| qrcode.to_string())?,
+        )
+        .send()
+        .await?;
+    match response.headers().get("location") {
+        None => Err(response.text().await?.into()),
+        Some(location) => {
+            let url = location
+                .to_str()
+                .unwrap()
+                .replace("/confirm", "/common/confirm");
+            qrcode["data"]["url"] = url.into();
+            Ok(qrcode)
+        }
+    }
 }
 
 #[tauri::command]
