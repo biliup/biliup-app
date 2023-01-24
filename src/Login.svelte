@@ -170,17 +170,19 @@
                     </button>
                 </div>
                 <form>
-                    <label class="block text-sm text-gray-800">用户名</label>
-                    <input bind:value={username} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
-                               type="text">
-
                     <div class="mt-4">
-                        <div class="flex items-center justify-between">
-                            <label class="block text-sm text-gray-800" for="password">密码</label>
-                        </div>
-
-                        <input bind:value={password} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
-                               type="password">
+                        <label class="block text-sm text-gray-800" for="username">用户名</label>
+                        <input id="username"
+                            bind:value={username} 
+                            class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
+                            type="text">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm text-gray-800" for="password">密码</label>
+                        <input id="password"
+                            bind:value={password} 
+                            class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
+                            type="password">
                     </div>
                     <label class="flex items-center mt-4">
                         <input bind:checked={rememberMe} class="form-checkbox" type="checkbox"/>
