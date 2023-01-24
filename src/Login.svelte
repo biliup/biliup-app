@@ -206,13 +206,13 @@
                     </label>
                     <div class="flex">
                         <input type="text" placeholder="国家代码"  bind:value={countryCode} class="input input-bordered w-[5.75rem]">
-                        <input type="text" placeholder="phone numbers"  bind:value={telephone} class="input ml-2 w-full">
+                        <input type="text" placeholder="手机号"  bind:value={telephone} class="input ml-2 w-full">
                     </div>
                     <label class="label">
                         <span class="label-text">验证码</span>
                     </label>
                     <div class="relative">
-                        <input type="text" placeholder="verification code"  bind:value={verificationCode} class="w-full pr-16 input input-primary">
+                        <input type="text" placeholder="验证码"  bind:value={verificationCode} class="w-full pr-16 input input-primary">
                         <button on:click={sendSms} class:loading={throttle}  disabled={throttle}
                                 class="absolute top-0 right-0 rounded-l-none btn btn-primary">
                             {#if !throttle}
