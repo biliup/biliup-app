@@ -350,9 +350,13 @@
                     </button>
                 </div>
             </div>
+            
+            <!-- 视频标题 -->
             <input bind:value={selectedTemplate.title}
                    class="bg-[#f9fcfd] w-full text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                   placeholder="标题">
+                   placeholder="视频标题">
+
+            <!-- 视频上传 -->
             <Append selectedTemplate="{selectedTemplate}"/>
             <p class="text-sm text-gray-300" title="允许上传的视频后缀">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
