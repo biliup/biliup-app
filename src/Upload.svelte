@@ -396,25 +396,30 @@
                 {/if}
             </div>
 
-
-            <div class="flex w-52" use:archivePre={{callback, current, currentChildren}}>
-                <button class="border border-gray-300 relative w-full bg-white rounded-md pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            <!-- 分区选择 -->
+            <div class="flex w-52">
+                <!-- https://kabbouchi.github.io/tippyjs-v4-docs/accessibility/ -->
+                <div use:archivePre={{callback, current, currentChildren}}>
+                    <button class="border border-gray-300 relative w-full bg-white rounded-md pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        title="分区选择"    
+                        aria-expanded="false"
                         type="button">
-                    <span class="flex items-center">
-                        <span class="ml-1 block truncate">
-                            {parent} → {children}
+                        <span class="flex items-center">
+                            <span class="ml-1 block truncate">
+                                {parent} → {children}
+                            </span>
                         </span>
-                    </span>
-                    <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <svg aria-hidden="true" class="h-5 w-5 text-gray-400" fill="currentColor"
-                             viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path clip-rule="evenodd"
-                                  d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                  fill-rule="evenodd">
-                            </path>
-                        </svg>
-                    </span>
-                </button>
+                        <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                            <svg aria-hidden="true" class="h-5 w-5 text-gray-400" fill="currentColor"
+                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path clip-rule="evenodd"
+                                    d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    fill-rule="evenodd">
+                                </path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
                 <!--                <input bind:this={archivePre} bind:value={tid} type="text" class=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" placeholder="分区"/>-->
             </div>
 

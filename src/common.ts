@@ -27,6 +27,8 @@ export function archivePre(node, combine) {
         plugins: [animateFill],
         inertia: true,
         interactive: true,
+        aria: null,
+        appendTo: 'parent',
         onCreate(instance) {
 
             partition = new Partition({
@@ -60,6 +62,12 @@ export function archivePre(node, combine) {
         },
         onDestroy(instance) {
             off();
+        },
+        onMount({ reference }) {
+            reference.setAttribute('aria-expanded', 'true')
+        },
+        onHide({ reference }) {
+            reference.setAttribute('aria-expanded', 'false')
         },
     });
     return {
