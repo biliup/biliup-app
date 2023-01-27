@@ -228,15 +228,21 @@
                 </div>
                 <button class="btn btn-block mt-2.5" on:click={login_by_sms}>登录</button>
             {/if}
+
+            <!-- 用户名密码登录按钮 -->
             <div class="flex items-center justify-between mt-4">
                 <span class="w-1/5 border-b dark:border-gray-600 lg:w-1/5"></span>
-
-                <a on:click={() => loginMethod='password'} href="#" class="text-xs text-center text-gray-500 uppercase dark:text-gray-400 hover:underline">若登录失败，尝试其他登录方式</a>
+                <a on:click={() => loginMethod='password'} 
+                    on:keydown={() => loginMethod='password'}
+                    role="button"
+                    aria-label="用户名密码登录"
+                    href="#" class="text-xs text-center text-gray-500 uppercase dark:text-gray-400 hover:underline">若登录失败，尝试其他登录方式</a>
 
                 <span class="w-1/5 border-b dark:border-gray-400 lg:w-1/5"></span>
             </div>
 
             <div class="flex items-center mt-6 -mx-2">
+                <!-- 短信登录按钮 -->
                 <button type="button" on:click={() => loginMethod = "sms"}
                         class="flex items-center justify-center w-full px-6 py-2 mx-2 text-sm font-medium text-white transition-colors duration-200 transform bg-blue-500 rounded-md hover:bg-blue-400 focus:bg-blue-400 focus:outline-none">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -245,6 +251,7 @@
                     <span class="hidden mx-2 sm:inline">短信登录</span>
                 </button>
 
+                <!-- 扫码登录按钮 -->
                 <button type="button" on:click={loginByQrcode}
                    class="flex items-center justify-center px-6 py-2 mx-2 w-full text-sm font-medium text-gray-500 transition-colors duration-200 transform bg-gray-300 rounded-md hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
