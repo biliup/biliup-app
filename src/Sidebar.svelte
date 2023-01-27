@@ -213,7 +213,7 @@
                 </div>
             </Modal>
             <div data-tip="打开配置文件夹" class="tooltip">
-                <h4 on:click={openConfigDir} class="ml-2 font-medium text-gray-800 hover:underline truncate max-w-[8rem]">{name}</h4>
+                <button on:click={openConfigDir} class="ml-2 font-medium text-gray-800 hover:underline truncate max-w-[8rem]">{name}</button>
             </div>
         </div>
 
