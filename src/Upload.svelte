@@ -354,9 +354,11 @@
                    class="bg-[#f9fcfd] w-full text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
                    placeholder="标题">
             <Append selectedTemplate="{selectedTemplate}"/>
-            <p class="text-sm text-gray-300">
+            <p class="text-sm text-gray-300" title="允许上传的视频后缀">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
+
+            <!-- 视视频封面 -->
             <div class="app">
                 <FilePond bind:this={pond} {name}
                           labelIdle="{labelIdle}"
@@ -367,6 +369,8 @@
                           acceptedFileTypes="image/png, image/jpeg, image/gif"
                           />
             </div>
+
+            <!-- 转载声明 -->
             <div class="bg-[#fafcfd] border rounded-md px-2 py-1">
                 <div class="mb-3 flex justify-between items-center">
                     <!--                <div>-->
