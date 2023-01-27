@@ -10,9 +10,12 @@
         document.body.appendChild(topDiv);
     });
 </script>
+
 <!-- The button to open modal -->
+<!-- 占位显示标签 -->
 <label for="component-modal-{componentId}" class="modal-button">
-    <slot name="open-modal">
+    <!-- NOTE for `aria-hidden`: 此处的标签实际上键盘不可操作，故忽略 -->
+    <slot name="open-modal" aria-hidden="true">
     </slot>
 </label>
 
