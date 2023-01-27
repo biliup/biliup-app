@@ -303,18 +303,18 @@
                     <div class="form-control w-full max-w-xs">
                         <label class="label">
                             <span class="label-text">输入BV或av号可编辑现有稿件</span>
-                            <span class="label-text-alt">av971158452</span>
+                            <span aria-hidden="true" class="label-text-alt">av971158452</span>
                         </label>
                         <input type="text" bind:value={tempName} placeholder="{'未命名模板' + Object.keys($template).length}" class="input input-bordered w-full max-w-xs" />
                         <label class="label">
                             <span class="label-text-alt">输入其他将新建投稿模板</span>
-                            <span class="label-text-alt">BV1ip4y1x7Gi</span>
+                            <span aria-hidden="true"  class="label-text-alt">BV1ip4y1x7Gi</span>
                         </label>
                     </div>
 
                     <div class="modal-action">
                         <label for="{componentId}" on:click={add} class="btn btn-accent">添加模板</label>
-                        <label for="{componentId}" class="btn">Close</label>
+                        <label aria-hidden="true"  for="{componentId}" class="btn">Close</label>
                     </div>
                 </div>
             </Modal>
