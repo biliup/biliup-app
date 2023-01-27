@@ -457,13 +457,16 @@
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="动态描述" rows="1"></textarea>
             </div>
-            
+
+            <!-- 定时发布 -->
             <div class="flex items-center">
-                <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
-                <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">开启定时发布</span>
+                <label class="label">
+                    <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
+                    <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide" >开启定时发布</span>
+                </label>
                 {#if (isDtime)}
-                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="date" bind:value={date}/>
-                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="time" bind:value={time}/>
+                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="date" bind:value={date} title="定时发布日期（年/月/日）" />
+                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="time" bind:value={time} title="定时发布时间（小时:分钟）" />
                 {/if}
             </div>
             {#if (autoSubmit)}
