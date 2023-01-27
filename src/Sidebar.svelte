@@ -179,7 +179,7 @@
     <div class="flex items-center justify-between">
         <div class="flex items-center flex-none">
             <Modal>
-                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" src="{face}" alt="avatar"/>
+                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" src="{face}" alt="头像"/>
                 <div slot="box" let:componentId>
                     <label for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
                     <label for="{componentId}" on:click={processNewUser} class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
