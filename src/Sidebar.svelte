@@ -263,8 +263,9 @@
         <nav class="">
             {#each items as item(item)}
 
-                <a animate:flip="{{duration: 300}}" class:selected="{$currentTemplate.current === item}"
+                <button animate:flip="{{duration: 300}}" class:selected="{$currentTemplate.current === item}"
                    on:click="{() => select(item)}">
+                   <div class="flex flex-row">
                     {#if ($template[item].changed)}
                         <span class="flex absolute h-1.5 w-1.5 top-0 right-0 flex">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
@@ -284,7 +285,8 @@
                         </svg>
                         <span class="ml-4 font-medium truncate">{item}</span>
                     {/if}
-                </a>
+                    </div>
+                </button>
 
             {/each}
         </nav>
