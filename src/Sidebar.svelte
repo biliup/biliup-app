@@ -178,8 +178,11 @@
      transition:fly={{delay: 400, x: -100}}>
     <div class="flex items-center justify-between">
         <div class="flex items-center flex-none">
-            <Modal>
-                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" src="{face}" alt="头像"/>
+            <!-- 账号切换 -->
+            <Modal realButtonLabel="账号切换">
+                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" 
+                    aria-hidden="true"
+                    src="{face}" alt="头像"/>
                 <div slot="box" let:componentId>
                     <label for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
                     <label for="{componentId}" on:click={processNewUser} class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
@@ -219,8 +222,8 @@
             </div>
         </div>
 
-        <Modal>
-            <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} >
+        <Modal realButtonLabel="设置">
+            <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} aria-hidden="true">
                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                 </svg>
@@ -284,9 +287,10 @@
         </nav>
 
         <div class="sticky bottom-0 bg-inherit">
-            <Modal>
+            <Modal realButtonLabel="编辑现有稿件或新建投稿模板">
                 <a slot="open-modal" class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
-                        type="button">
+                    aria-hidden="true"
+                    type="button">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                          xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
