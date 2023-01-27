@@ -208,7 +208,9 @@
                         {/each}
                     </ul>
                     <div class="modal-action">
-                        <label for="{componentId}" on:click={processChangeUser} class="btn">切换账号</label>
+                        <label for="{componentId}" on:click={processChangeUser} 
+                            role="button" title="切换账号"
+                            class="btn">切换账号</label>
                     </div>
                 </div>
             </Modal>
@@ -232,14 +234,18 @@
                     <h4>上传线路选择：</h4>
                     <div class="btn-group">
                         {#each lines as l}
-                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
+                            <input type="radio" bind:group={line} title="{l}" value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
                         {/each}
                     </div>
                 </div>
 
                 <div class="modal-action">
-                    <label for="{componentId}" on:click={saveSettings} class="btn btn-accent">Save</label>
-                    <label for="{componentId}" class="btn">Close</label>
+                    <label for="{componentId}" on:click={saveSettings} 
+                        title="保存设置"
+                        class="btn btn-accent">Save</label>
+                    <label for="{componentId}" 
+                        title="关闭设置"
+                        class="btn">Close</label>
                 </div>
             </div>
         </Modal>
