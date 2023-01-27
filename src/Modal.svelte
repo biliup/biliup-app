@@ -4,6 +4,9 @@
 
 <script>
     import {onMount} from "svelte";
+    /// 键盘可操作按钮的名称
+    export let realButtonLabel="";
+
     let topDiv;
     let componentId = totalComponents++;
     onMount(() => {
@@ -22,7 +25,8 @@
 <!-- Put this part before </body> tag -->
 <!-- 实际的 checkbox 与弹窗 -->
 <div bind:this={topDiv}>
-    <input type="checkbox" id="component-modal-{componentId}" 
+    <input type="checkbox" id="component-modal-{componentId}"
+        aria-label="{realButtonLabel}"
         role="button"
         class="modal-toggle">
     <label for="component-modal-{componentId}" class="modal cursor-pointer">
