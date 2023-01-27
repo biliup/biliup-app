@@ -312,22 +312,26 @@
 <div in:fly="{{ y: 200, duration: 400 }}">
     <div class="px-6 pt-3 pb-10 my-2 mr-12" >
         <div class="space-y-3">
+            <!-- 模板 -->
             <div class="flex justify-between">
+                <!-- 模板标题 -->
                 <label class="text-lg font-bold tracking-wide mb-2">
                     {#if (edit)}
                         <input on:focusout={()=> update(false)} bind:value={selected}
                                class="w-full p-1 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                               placeholder="标题">
+                               placeholder="模板标题">
                     {:else}
                         <div class="p-1">
                             {selected}
-                            <svg on:click={()=> update(true)}
-                                 xmlns="http://www.w3.org/2000/svg"
+                            <button on:click|preventDefault={()=> update(true)}
+                                 title="模板标题编辑按钮" >
+                            <svg xmlns="http://www.w3.org/2000/svg"
                                  class="cursor-pointer inline h-5 w-5 hover:text-blue-700" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                             </svg>
+                            </button>
                         </div>
                     {/if}
                 </label>
