@@ -435,22 +435,29 @@
                        placeholder="标签，回车输入"
                        type="text"/>
             </div>
+
+            <!-- 视频简介 -->
             <div class="text-gray-700">
-                <label class="label">
+                <label class="label" for="bv-intro">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
                 </label>
                 <textarea bind:value={selectedTemplate.desc}
+                          id="bv-intro"
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="简介补充: ..." rows="4"></textarea>
             </div>
+
+            <!-- 粉丝动态描述 -->
             <div class="text-gray-700">
-                <label class="label">
+                <label class="label" for="bv-dynamic-desc">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
                 </label>
                 <textarea bind:value={selectedTemplate.dynamic}
+                          id="bv-dynamic-desc"
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="动态描述" rows="1"></textarea>
             </div>
+            
             <div class="flex items-center">
                 <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
                 <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">开启定时发布</span>
