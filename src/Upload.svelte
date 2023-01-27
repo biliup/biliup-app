@@ -417,11 +417,13 @@
                 </button>
                 <!--                <input bind:this={archivePre} bind:value={tid} type="text" class=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" placeholder="分区"/>-->
             </div>
+
+            <!-- 视频标签 -->
             <div class="flex flex-wrap rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
                 {#each tags as tag(tag)}
                     <span animate:flip="{{duration: 300}}" class="flex  ml-1 my-1.5 px-3 py-0.5 text-base rounded-full text-white  bg-indigo-500 ">
                         {tag}
-                        <button on:click={(e)=>{removeTag(tag)}} class="bg-transparent hover">
+                        <button on:click={(e)=>{removeTag(tag)}} class="bg-transparent hover" title="删除{tag}标签" >
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
                                  class="ml-2" viewBox="0 0 1792 1792">
                                 <path d="M1490 1322q0 40-28 68l-136 136q-28 28-68 28t-68-28l-294-294-294 294q-28 28-68 28t-68-28l-136-136q-28-28-28-68t28-68l294-294-294-294q-28-28-28-68t28-68l136-136q28-28 68-28t68 28l294 294 294-294q28-28 68-28t68 28l136 136q28 28 28 68t-28 68l-294 294 294 294q28 28 28 68z">
@@ -432,7 +434,8 @@
                 {/each}
 
                 <input bind:value={tempTag} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleKeypress()}
-                       placeholder="标签，回车输入"
+                       placeholder="视频标签，回车输入"
+                       title="输入标签名后按回车添加标签；通过标签的删除按钮删除标签"
                        type="text"/>
             </div>
 
