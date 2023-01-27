@@ -184,10 +184,10 @@
                     aria-hidden="true"
                     src="{face}" alt="头像"/>
                 <div slot="box" let:componentId>
-                    <label for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+                    <label aria-hidden="true" for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
                     <label for="{componentId}" on:click={processNewUser} class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
                         <div class="flex items-center space-x-3">
-                            <svg class="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
+                            <svg aria-hidden="true" class="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
                                 <!--                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">-->
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                                 <!--                        </svg>-->
@@ -199,7 +199,7 @@
                         {#each people as person}
                             <!-- Remove top/bottom padding when first/last child -->
                             <li class="flex items-center py-0.5 first:pt-0 last:pb-0 ">
-                                <img class="h-8 w-8 rounded-full" src="{person.face}" alt="" />
+                                <img aria-hidden="true" class="h-8 w-8 rounded-full" src="{person.face}" alt="" />
                                 <div class="form-control w-full mx-2">
                                     <label class="label cursor-pointer">
                                         <span class="label-text">{person.name}</span>
