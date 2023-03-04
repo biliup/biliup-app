@@ -1,4 +1,4 @@
-use biliup::error::CustomError;
+use biliup::error::Kind;
 use futures::future::Aborted;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -10,7 +10,7 @@ pub enum Error {
     #[error("{0}")]
     Err(String),
     #[error(transparent)]
-    Error(#[from] CustomError),
+    Error(#[from] Kind),
     #[error(transparent)]
     Aborted(#[from] Aborted),
     #[error(transparent)]

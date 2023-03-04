@@ -1,6 +1,6 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {receive,currentTemplate, save_config, template} from './store.ts';
+    import {receive,currentTemplate, save_config, template} from './store';
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
@@ -128,12 +128,14 @@
 
         let invokeMethod;
         let msg;
+        let hires_params = {};
         if (selected?.length > 2 && (selected.startsWith('av') || selected.startsWith('BV'))) {
             invokeMethod = 'edit_video';
             msg = '编辑';
         }else {
             invokeMethod = 'submit';
             msg = '投稿';
+            hires_params = { lossless_music: isHiRes ? 1 : 0 };
         }
         invoke(invokeMethod, {
                 studio: {
@@ -141,11 +143,12 @@
                     tag: tag,
                     dtime: dtime,
                     no_reprint: noreprint,
+                    ...hires_params,
                 }
         })
-        .then((res) => {
+        .then((res: any) => {
             console.log(res);
-            createPop(`${selected} - ${msg}成功`, 5000, 'Success');
+            createPop(`${selected} - ${msg}成功: ${res.bvid}`, 5000, 'Success');
         }).catch((e) => {
                 createPop(e, 5000);
                 console.log(e);
@@ -218,6 +221,12 @@
         selectedTemplate.dtime = new Date(`${date} ${time}`).valueOf()/1000;
     } else {
         selectedTemplate.dtime = null;
+    }
+
+    let isHiRes = selectedTemplate.lossless_music;
+    let hiResFieldDisabled = false;
+    if (selected?.length > 2 && (selected.startsWith('av') || selected.startsWith('BV'))) {
+        hiResFieldDisabled = true;
     }
 
     import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
@@ -459,6 +468,12 @@
                     <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="time" bind:value={time}/>
                 {/if}
             </div>
+            {#if (!hiResFieldDisabled)}
+            <div class="flex items-center">
+                <input type="checkbox" class="toggle my-2" bind:checked="{isHiRes}">
+                <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">Hi-Res无损音质</span>
+            </div>
+            {/if}
             {#if (autoSubmit)}
                 <div class="flex justify-center items-center">
                     <button type="button" class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-indigo-500 hover:bg-indigo-400 transition ease-in-out duration-150 cursor-not-allowed" disabled>
