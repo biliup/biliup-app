@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use biliup::client::{Client, LoginInfo};
+use biliup::uploader::credential::{login_by_cookies, Credential as BiliCredential};
 use futures::Stream;
 use std::fmt::Write;
 use std::pin::Pin;
@@ -12,29 +12,25 @@ use reqwest::Body;
 use tokio::sync::mpsc::UnboundedSender;
 
 use std::sync::{Arc, RwLock};
+use biliup::uploader::bilibili::BiliBili;
 
 pub mod error;
 
 #[derive(Default)]
 pub struct Credential {
-    pub credential: RwLock<Option<Arc<(LoginInfo, Client)>>>,
+    pub credential: RwLock<Option<Arc<BiliBili>>>,
 }
 
 impl Credential {
-    pub async fn get_credential(&self) -> error::Result<Arc<(LoginInfo, Client)>> {
+    pub async fn get_credential(&self) -> error::Result<Arc<BiliBili>> {
         {
             let read_guard = self.credential.read().unwrap();
             if !read_guard.is_none() {
                 return Ok(read_guard.as_ref().unwrap().clone());
             }
         }
-        let client = Client::new();
-        let file = std::fs::File::options()
-            .read(true)
-            .write(true)
-            .open(cookie_file()?)?;
-        let login_info = client.login_by_cookies(file).await?;
-        let myinfo: serde_json::Value = client
+        let login_info = login_by_cookies(cookie_file()?).await?;
+        let myinfo: serde_json::Value = login_info
             .client
             .get("https://api.bilibili.com/x/space/myinfo")
             .send()
@@ -43,7 +39,7 @@ impl Credential {
             .await?;
         let user = config_path()?.join(format!("users/{}.json", myinfo["data"]["mid"]));
         user_path(user).await?;
-        let arc = Arc::new((login_info, client));
+        let arc = Arc::new(login_info);
         *self.credential.write().unwrap() = Some(arc.clone());
         Ok(arc)
     }
@@ -84,7 +80,7 @@ pub async fn user_path(path: PathBuf) -> error::Result<PathBuf> {
 }
 
 pub async fn login_by_password(username: &str, password: &str) -> anyhow::Result<()> {
-    let info = Client::new().login_by_password(username, password).await?;
+    let info = BiliCredential::default().login_by_password(username, password).await?;
     let file = std::fs::File::create(cookie_file()?)?;
     serde_json::to_writer_pretty(&file, &info)?;
     println!("密码登录成功，数据保存在{:?}", file);
