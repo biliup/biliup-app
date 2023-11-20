@@ -2,7 +2,7 @@
     import Append from './Append.svelte';
     import {receive,currentTemplate, save_config, template} from './store';
     import {invoke} from '@tauri-apps/api/tauri';
-    import {archivePre, createPop, partition} from "./common";
+    import {archivePre, createPop, partition, getManuscriptInfo} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
     import { fade, fly } from 'svelte/transition';
     import {flip} from 'svelte/animate';
@@ -12,19 +12,24 @@
     import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
     import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+	import {onMount} from'svelte';
 
     export let selected;
     export let selectedTemplate;
+
     let oldSelected = selected;
     // let title: string = ;
     let nocopyright: boolean;
-    $ : nocopyright = selectedTemplate?.copyright === 2;
     let noReprint = true;
-    function handleClick(e) {
-        selectedTemplate.copyright = e.target.checked ? 2 : 1;
-    }
-
     let edit = false;
+
+    $ : nocopyright = selectedTemplate?.copyright === 2;
+	
+	onMount(async () => {await refresh(selected)})
+
+	function handleClick(e) {
+		selectedTemplate.copyright = e.target.checked ? 2 : 1;
+	}
 
     function update(e) {
         if (!e) {
@@ -58,20 +63,26 @@
         }
         $template = $template;
         console.log($template);
-        await save_config((ret) => {
+                await save_config((ret) => {
             ret.streamers = $template;
-        })
+                    })
         createPop('移除成功', 2000, 'Success');
     }
 
     async function save() {
         // console.log({[selected]: config});
-        await save_config((ret) => {
+                await save_config((ret) => {
             ret.streamers = $template;
-        })
+                    })
         selectedTemplate.changed = false;
         $template = $template;
         createPop('保存成功', 5000, 'Success');
+    }
+
+    async function refresh(bvid: string) {
+        await getManuscriptInfo(bvid, $template)
+
+        createPop('刷新成功', 600, 'Success')
     }
 
     // console.log()
@@ -197,7 +208,9 @@
         parent = detailParent;
         children = detailChildren;
     }
-    if (selectedTemplate.dtime === 0) {
+
+    // if (selectedTemplate.dtime === 0) {
+    if (!selectedTemplate.dtime) {
         selectedTemplate.dtime = null;
     }
     let dtime;
@@ -318,6 +331,7 @@
         },
     }] : null;
 </script>
+
 <div in:fly="{{ y: 200, duration: 400 }}">
     <div class="px-6 pt-3 pb-10 my-2 mr-12" >
         <div class="space-y-3">
@@ -349,12 +363,18 @@
                                   stroke-width="2"/>
                         </svg>
                     </button>
-                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={save}
+                    <button class="ml-2 py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={save}
                             type="button">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                              xmlns="http://www.w3.org/2000/svg">
                             <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round"
                                   stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg "
+                            type="button" style="background-color: green;" on:click|preventDefault={()=>refresh(selected)}>
+                        <svg class="icon" viewBox="0 0 1078 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="210.546875" height="200">
+                            <path d="M1076.709053 768l-47.427369-177.475368a33.953684 33.953684 0 0 0-41.498947-23.983158l-167.504842 44.94821a33.953684 33.953684 0 0 0 17.569684 65.536l94.477474-25.384421c-63.703579 159.851789-221.076211 268.611368-395.210106 268.611369a425.229474 425.229474 0 0 1-418.438736-349.022316 33.899789 33.899789 0 1 0-66.66779 12.18021 492.975158 492.975158 0 0 0 485.052632 404.641685c194.991158 0 371.658105-117.76 450.021052-292.810106l24.252632 90.327579a33.899789 33.899789 0 1 0 65.374316-17.569684M81.381053 402.162526a34.600421 34.600421 0 0 0 8.838736-1.185684l167.450948-44.94821a33.953684 33.953684 0 0 0-17.569684-65.536l-88.495158 23.713684A424.690526 424.690526 0 0 1 537.114947 67.907368a425.498947 425.498947 0 0 1 418.223158 347.621053 33.899789 33.899789 0 1 0 66.56-12.449684A493.298526 493.298526 0 0 0 537.114947 0a492.220632 492.220632 0 0 0-444.254315 280.037053l-26.246737-98.088421a33.953684 33.953684 0 0 0-41.498948-24.037053 33.953684 33.953684 0 0 0-23.929263 41.606737l47.427369 177.475368c4.096 15.198316 17.785263 25.168842 32.714105 25.168842" fill="#FFFFFF"></path>
                         </svg>
                     </button>
                 </div>

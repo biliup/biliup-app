@@ -3,7 +3,6 @@
 	import Home from './Home.svelte';
 	import {isLogin} from './store.ts';
     import Modal from "./Modal.svelte";
-    import Pop from "./Pop.svelte";
     import {notifyHistory} from "./common";
     import {getVersion} from "@tauri-apps/api/app";
 	// import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
@@ -84,6 +83,7 @@
                             <a class="text-blue-600 after:content-['_↗'] ..." href="https://biliup.github.io/biliup-app " target="_blank">文档</a>
                             里面有使用演示视频，下载地址（建议保持更新到最新版）与源码的地址。如果有什么建议可以在GitHub的issue中提出。
                             这个软件能帮到你的话，可以在GitHub上点个star，谢谢！
+						</p>
                     </div>
                 </Modal>
             </li>

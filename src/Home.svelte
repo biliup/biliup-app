@@ -70,6 +70,7 @@
 
 <div class="flex items-start">
     <Sidebar items="{items}"/>
+
     <div class="w-screen h-screen overflow-y-auto overflow-x-hidden">
         <div class="min-h-screen">
             <!--        <Upload selected={current}/>-->

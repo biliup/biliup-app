@@ -5,8 +5,6 @@ import {invoke} from "@tauri-apps/api/tauri";
 import {crossfade, fly} from "svelte/transition";
 import {listen} from "@tauri-apps/api/event";
 import {createPop} from "./common";
-import {selectedTemplate} from "./Upload.svelte";
-
 
 export const isLogin = writable(false);
 export const template = writable({});
@@ -105,7 +103,7 @@ function upload(video, temp) {
     // const files = [];
     video.start = Date.now();
     invoke('upload', {
-        video: video
+        video
     }).then((res) => {
         // temp.atomicInt--;
         // video.filename = res[0].filename;
@@ -192,7 +190,7 @@ export async function speed() {
 
 export async function save_config(fn) {
     try {
-        let res = await invoke('load',)
+        let res = await invoke('load')
         fn(res);
         return await invoke('save', {
             config: res

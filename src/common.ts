@@ -7,10 +7,10 @@ import Partition from "./Partition.svelte";
 import {writable} from "svelte/store";
 import Pop from "./Pop.svelte";
 import {check_outros, group_outros, transition_out} from "svelte/internal";
-import Modal from "./Modal.svelte";
-import {invoke} from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api";
+import { save_config, template, currentTemplate } from './store'
 
-export let partition = writable(null);
+export let partition = writable(null)
 
 export function archivePre(node, combine) {
     let off;
@@ -95,6 +95,56 @@ export function createPop(msg, duration = 3000, mode = 'Error') {
     setTimeout(() => outroAndDestroy(pop), duration);
 }
 
+// 获取视频稿件数据
+export async function getManuscriptInfo(tempName: string, templateCollection) {
+    const submitted = tempName?.length > 2 &&
+        (tempName.startsWith('av') || tempName.startsWith('BV'))
+
+    if (!submitted) return false
+
+    if (!(await invoke('is_vid', { input: tempName }))) return false
+
+    try {
+        templateCollection[tempName] = await invoke('show_video', { input: tempName })
+    } catch (e) {
+        tempName = null
+        createPop(e, 5000)
+        return
+    }
+
+    templateCollection[tempName]['files'] = []
+    templateCollection[tempName]['videos'].forEach(value => {
+        templateCollection[tempName]['files'].push({
+            filename: value.filename,
+            id: value.filename,
+            title: value.title,
+            desc: value.desc,
+            progress: 100,
+            uploaded: 0,
+            speed_uploaded: 0,
+            speed: 0,
+            totalSize: 0,
+            complete: true,
+            process: false,
+        })
+    })
+    templateCollection[tempName].atomicInt = 0
+
+    // 解决添加模板后不刷新的BUG
+    template.set(templateCollection)
+    currentTemplate.update(data => {
+        const obj = { ...data }
+        obj.selectedTemplate.files = templateCollection[tempName]['files']
+        obj.selectedTemplate.videos = templateCollection[tempName]['videos']
+        return obj
+    })
+
+    await save_config(ret => {
+        ret.streamers = templateCollection
+    })
+
+    return true
+}
 
 // Workaround for https://github.com/sveltejs/svelte/issues/4056
 const outroAndDestroy = (instance) => {

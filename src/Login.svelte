@@ -18,7 +18,7 @@
     let throttle = false;
     let maxtime = 60;
 
-    invoke('login_by_cookie',)
+    invoke('login_by_cookie')
         .then((res) => {
             isLogin.set(true);
             console.log(`Message: ${res}`)
