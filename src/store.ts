@@ -7,6 +7,7 @@ import {listen} from "@tauri-apps/api/event";
 import {createPop} from "./common";
 
 export const isLogin = writable(false);
+export const autoShutdown = writable(false);
 export const template = writable({});
 
 export const currentTemplate = writable({

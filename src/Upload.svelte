@@ -1,10 +1,10 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {receive,currentTemplate, save_config, template} from './store';
+    import {currentTemplate, save_config, template, autoShutdown} from './store';
     import {invoke} from '@tauri-apps/api/tauri';
     import {archivePre, createPop, partition, getManuscriptInfo} from "./common";
-    import FilePond, { registerPlugin, supported } from 'svelte-filepond';
-    import { fade, fly } from 'svelte/transition';
+    import FilePond, { registerPlugin } from 'svelte-filepond';
+    import { fly } from 'svelte/transition';
     import {flip} from 'svelte/animate';
     // Import the Image EXIF Orientation and Image Preview plugins
     // Note: These need to be installed separately
@@ -124,6 +124,7 @@
     let tempTag;
     let autoSubmit = false;
     $: autoSubmit = !!selectedTemplate?.submitCallback;
+
     function submitCallback() {
         selectedTemplate.videos = selectedTemplate?.files;
         let dtime = null;
@@ -151,8 +152,8 @@
         invoke(invokeMethod, {
                 studio: {
                     ...selectedTemplate,
-                    tag: tag,
-                    dtime: dtime,
+                    tag,
+                    dtime,
                     no_reprint: noreprint,
                     ...hires_params,
                 }
@@ -160,12 +161,14 @@
         .then((res: any) => {
             console.log(res);
             createPop(`${selected} - ${msg}成功: ${res.bvid}`, 5000, 'Success');
+            $autoShutdown ? invoke('shutdown_now') : null
         }).catch((e) => {
-                createPop(e, 5000);
-                console.log(e);
-            }
-        );
+            createPop(e, 5000);
+            console.log(e);
+            // invoke('shutdown_cancel')
+        });
     }
+
     function submit() {
         if (selectedTemplate.atomicInt === 0) {
             return submitCallback();
@@ -494,6 +497,10 @@
                 <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">Hi-Res无损音质</span>
             </div>
             {/if}
+            <div class="flex items-center">
+                <input type="checkbox" class="toggle my-2" bind:checked="{$autoShutdown}">
+                <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">提交完成后自动关机</span>
+            </div>
             {#if (autoSubmit)}
                 <div class="flex justify-center items-center">
                     <button type="button" class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-indigo-500 hover:bg-indigo-400 transition ease-in-out duration-150 cursor-not-allowed" disabled>

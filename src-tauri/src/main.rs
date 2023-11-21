@@ -23,6 +23,7 @@ use tokio::sync::mpsc;
 use tracing::info;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{filter::LevelFilter, prelude::*, Layer, Registry};
+use std::process::Command;
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
@@ -296,6 +297,16 @@ fn log(level: &str, msg: &str) -> Result<()> {
     Ok(())
 }
 
+#[tauri::command]
+fn shutdown_now() {
+    Command::new("cmd").arg("/c").arg("shutdown -s -t 0").output().expect("cmd exec error!");
+}
+
+// #[tauri::command]
+// fn shutdown_cancel() {
+//     Command::new("cmd").arg("/c").arg("shutdown -a").output().expect("cmd exec error!");
+// }
+
 fn main() {
     tauri::Builder::default()
         .setup(|_app| {
@@ -312,6 +323,8 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // shutdown_cancel,
+            shutdown_now,
             login,
             login_by_cookie,
             load_account,

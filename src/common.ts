@@ -96,7 +96,7 @@ export function createPop(msg, duration = 3000, mode = 'Error') {
 }
 
 // 获取视频稿件数据
-export async function getManuscriptInfo(tempName: string, templateCollection) {
+export async function getManuscriptInfo(tempName: string, templateCollection = {}) {
     const submitted = tempName?.length > 2 &&
         (tempName.startsWith('av') || tempName.startsWith('BV'))
 
@@ -129,7 +129,7 @@ export async function getManuscriptInfo(tempName: string, templateCollection) {
         })
     })
     templateCollection[tempName].atomicInt = 0
-
+    
     // 解决添加模板后不刷新的BUG
     template.set(templateCollection)
     currentTemplate.update(data => {
