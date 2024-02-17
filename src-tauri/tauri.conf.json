@@ -50,7 +50,7 @@
       "all": true,
       "http": {
         "all": true,
-        "scope": ["http://**", "https://archive.biliimg.com/*"]
+        "scope": ["http://**", "https://archive.biliimg.com/*","https://i2.hdslb.com/*"]
       },
       "fs": {
           "scope": ["$CONFIG/*"]
