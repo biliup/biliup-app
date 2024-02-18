@@ -321,27 +321,34 @@
 <div in:fly="{{ y: 200, duration: 400 }}">
     <div class="px-6 pt-3 pb-10 my-2 mr-12" >
         <div class="space-y-3">
+            <!-- 模板 -->
             <div class="flex justify-between">
+                <!-- 模板标题 -->
                 <label class="text-lg font-bold tracking-wide mb-2">
                     {#if (edit)}
                         <input on:focusout={()=> update(false)} bind:value={selected}
                                class="w-full p-1 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                               placeholder="标题">
+                               placeholder="模板标题">
                     {:else}
                         <div class="p-1">
                             {selected}
-                            <svg on:click={()=> update(true)}
-                                 xmlns="http://www.w3.org/2000/svg"
+                            <button on:click|preventDefault={()=> update(true)}
+                                 title="模板标题编辑按钮" >
+                            <svg xmlns="http://www.w3.org/2000/svg"
                                  class="cursor-pointer inline h-5 w-5 hover:text-blue-700" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                             </svg>
+                            </button>
                         </div>
                     {/if}
                 </label>
+                <!-- 模板保存与删除 -->
                 <div class="flex flex-row-reverse">
-                    <button class="ml-2 py-2 px-2 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={del}
+                    <button class="ml-2 py-2 px-2 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " 
+                            on:click|preventDefault={del}
+                            title="删除当前模板"
                             type="button">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                              xmlns="http://www.w3.org/2000/svg">
@@ -349,7 +356,9 @@
                                   stroke-width="2"/>
                         </svg>
                     </button>
-                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={save}
+                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " 
+                            on:click|preventDefault={save}
+                            title="保存当前模板"
                             type="button">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                              xmlns="http://www.w3.org/2000/svg">
@@ -359,13 +368,19 @@
                     </button>
                 </div>
             </div>
+            
+            <!-- 视频标题 -->
             <input bind:value={selectedTemplate.title}
                    class="bg-[#f9fcfd] w-full text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                   placeholder="标题">
+                   placeholder="视频标题">
+
+            <!-- 视频上传 -->
             <Append selectedTemplate="{selectedTemplate}"/>
-            <p class="text-sm text-gray-300">
+            <p class="text-sm text-gray-300" title="允许上传的视频后缀">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
+
+            <!-- 视视频封面 -->
             <div class="app">
                 <FilePond bind:this={pond} {name}
                           labelIdle="{labelIdle}"
@@ -376,6 +391,8 @@
                           acceptedFileTypes="image/png, image/jpeg, image/gif"
                           />
             </div>
+
+            <!-- 转载声明 -->
             <div class="bg-[#fafcfd] border rounded-md px-2 py-1">
                 <div class="mb-3 flex justify-between items-center">
                     <!--                <div>-->
@@ -405,32 +422,39 @@
                 {/if}
             </div>
 
-
-            <div class="flex w-52" use:archivePre={{callback, current, currentChildren}}>
-                <button class="border border-gray-300 relative w-full bg-white rounded-md pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            <!-- 分区选择 -->
+            <div class="flex w-52">
+                <!-- https://kabbouchi.github.io/tippyjs-v4-docs/accessibility/ -->
+                <div use:archivePre={{callback, current, currentChildren}}>
+                    <button class="border border-gray-300 relative w-full bg-white rounded-md pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        title="分区选择"    
+                        aria-expanded="false"
                         type="button">
-                    <span class="flex items-center">
-                        <span class="ml-1 block truncate">
-                            {parent} → {children}
+                        <span class="flex items-center">
+                            <span class="ml-1 block truncate">
+                                {parent} → {children}
+                            </span>
                         </span>
-                    </span>
-                    <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <svg aria-hidden="true" class="h-5 w-5 text-gray-400" fill="currentColor"
-                             viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path clip-rule="evenodd"
-                                  d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                  fill-rule="evenodd">
-                            </path>
-                        </svg>
-                    </span>
-                </button>
+                        <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                            <svg aria-hidden="true" class="h-5 w-5 text-gray-400" fill="currentColor"
+                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path clip-rule="evenodd"
+                                    d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    fill-rule="evenodd">
+                                </path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
                 <!--                <input bind:this={archivePre} bind:value={tid} type="text" class=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" placeholder="分区"/>-->
             </div>
+
+            <!-- 视频标签 -->
             <div class="flex flex-wrap rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
                 {#each tags as tag(tag)}
                     <span animate:flip="{{duration: 300}}" class="flex  ml-1 my-1.5 px-3 py-0.5 text-base rounded-full text-white  bg-indigo-500 ">
                         {tag}
-                        <button on:click={(e)=>{removeTag(tag)}} class="bg-transparent hover">
+                        <button on:click={(e)=>{removeTag(tag)}} class="bg-transparent hover" title="删除{tag}标签" >
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
                                  class="ml-2" viewBox="0 0 1792 1792">
                                 <path d="M1490 1322q0 40-28 68l-136 136q-28 28-68 28t-68-28l-294-294-294 294q-28 28-68 28t-68-28l-136-136q-28-28-28-68t28-68l294-294-294-294q-28-28-28-68t28-68l136-136q28-28 68-28t68 28l294 294 294-294q28-28 68-28t68 28l136 136q28 28 28 68t-28 68l-294 294 294 294q28 28 28 68z">
@@ -441,31 +465,42 @@
                 {/each}
 
                 <input bind:value={tempTag} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleKeypress()}
-                       placeholder="标签，回车输入"
+                       placeholder="视频标签，回车输入"
+                       title="输入标签名后按回车添加标签；通过标签的删除按钮删除标签"
                        type="text"/>
             </div>
+
+            <!-- 视频简介 -->
             <div class="text-gray-700">
-                <label class="label">
+                <label class="label" for="bv-intro">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
                 </label>
                 <textarea bind:value={selectedTemplate.desc}
+                          id="bv-intro"
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="简介补充: ..." rows="4"></textarea>
             </div>
+
+            <!-- 粉丝动态描述 -->
             <div class="text-gray-700">
-                <label class="label">
+                <label class="label" for="bv-dynamic-desc">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
                 </label>
                 <textarea bind:value={selectedTemplate.dynamic}
+                          id="bv-dynamic-desc"
                           class="textarea textarea-bordered w-full"
                           cols="40" placeholder="动态描述" rows="1"></textarea>
             </div>
+
+            <!-- 定时发布 -->
             <div class="flex items-center">
-                <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
-                <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide">开启定时发布</span>
+                <label class="label">
+                    <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
+                    <span class="ml-2 text-sm font-bold text-gray-500 tracking-wide" >开启定时发布</span>
+                </label>
                 {#if (isDtime)}
-                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="date" bind:value={date}/>
-                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="time" bind:value={time}/>
+                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="date" bind:value={date} title="定时发布日期（年/月/日）" />
+                    <input class="mx-3 border rounded-lg border-gray-300 py-1 px-2" type="time" bind:value={time} title="定时发布时间（小时:分钟）" />
                 {/if}
             </div>
             {#if (!hiResFieldDisabled)}

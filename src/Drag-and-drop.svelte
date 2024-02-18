@@ -72,7 +72,7 @@
     <label class="flex flex-col items-center justify-center cursor-pointer rounded-lg border-2 border-dashed w-full h-full p-5 group text-center"
            on:click={fileselect}>
 
-        <img alt="freepik image" class="max-h-48 object-center" src="image-upload-concept-landing-page.png">
+        <img aria-hidden="true"   alt="freepik image" class="max-h-48 object-center" src="image-upload-concept-landing-page.png">
 
         <p class="mt-4 text-gray-500 "><span class="text-sm">拖拽</span> 视频到此处 <br/>或者从你的电脑中<a
                 class="text-blue-600 hover:underline">选择</a></p>

@@ -178,25 +178,29 @@
      transition:fly={{delay: 400, x: -100}}>
     <div class="flex items-center justify-between">
         <div class="flex items-center flex-none">
-            <Modal>
-                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" src="{face}" alt="avatar"/>
+            <!-- 账号切换 -->
+            <Modal realButtonLabel="账号切换">
+                <img slot="open-modal" class="object-cover rounded-full h-9 w-9 cursor-pointer hover:ring-2 hover:ring-purple-600 hover:ring-offset-2" 
+                    aria-hidden="true"
+                    src="{face}" alt="头像"/>
                 <div slot="box" let:componentId>
-                    <label for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
-                    <label for="{componentId}" on:click={processNewUser} class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
+                    <label aria-hidden="true" for="{componentId}" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+                    <label for="{componentId}" on:click={processNewUser} on:keyup={processNewUser}
+                    class="group block max-w-xs mx-auto rounded-lg p-2 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
                         <div class="flex items-center space-x-3">
-                            <svg class="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
+                            <svg aria-hidden="true" class="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
                                 <!--                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">-->
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                                 <!--                        </svg>-->
                             </svg>
-                            <h3 class="text-slate-900 group-hover:text-white text-sm font-semibold">注销并添加新账号</h3>
+                            <button class="text-slate-900 group-hover:text-white text-sm font-semibold">注销并添加新账号</button>
                         </div>
                     </label>
                     <ul role="list" class="p-6 divide-y divide-slate-200">
                         {#each people as person}
                             <!-- Remove top/bottom padding when first/last child -->
                             <li class="flex items-center py-0.5 first:pt-0 last:pb-0 ">
-                                <img class="h-8 w-8 rounded-full" src="{person.face}" alt="" />
+                                <img aria-hidden="true" class="h-8 w-8 rounded-full" src="{person.face}" alt="" />
                                 <div class="form-control w-full mx-2">
                                     <label class="label cursor-pointer">
                                         <span class="label-text">{person.name}</span>
@@ -208,17 +212,21 @@
                         {/each}
                     </ul>
                     <div class="modal-action">
-                        <label for="{componentId}" on:click={processChangeUser} class="btn">切换账号</label>
+                        <label for="{componentId}" 
+                            on:click={processChangeUser} 
+                            on:keyup={processChangeUser}
+                            role="button" title="切换账号"
+                            class="btn">切换账号</label>
                     </div>
                 </div>
             </Modal>
             <div data-tip="打开配置文件夹" class="tooltip">
-                <h4 on:click={openConfigDir} class="ml-2 font-medium text-gray-800 hover:underline truncate max-w-[8rem]">{name}</h4>
+                <button on:click={openConfigDir} class="ml-2 font-medium text-gray-800 hover:underline truncate max-w-[8rem]">{name}</button>
             </div>
         </div>
 
-        <Modal>
-            <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} >
+        <Modal realButtonLabel="设置">
+            <a slot="open-modal" class="flex cursor-pointer tooltip items-center" data-tip="设置" on:click={loadSettings} aria-hidden="true">
                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                 </svg>
@@ -232,14 +240,18 @@
                     <h4>上传线路选择：</h4>
                     <div class="btn-group">
                         {#each lines as l}
-                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
+                            <input type="radio" bind:group={line} title="{l}" value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
                         {/each}
                     </div>
                 </div>
 
                 <div class="modal-action">
-                    <label for="{componentId}" on:click={saveSettings} class="btn btn-accent">Save</label>
-                    <label for="{componentId}" class="btn">Close</label>
+                    <label for="{componentId}" on:click={saveSettings} 
+                        title="保存设置"
+                        class="btn btn-accent">Save</label>
+                    <label for="{componentId}" 
+                        title="关闭设置"
+                        class="btn">Close</label>
                 </div>
             </div>
         </Modal>
@@ -251,8 +263,9 @@
         <nav class="">
             {#each items as item(item)}
 
-                <a animate:flip="{{duration: 300}}" class:selected="{$currentTemplate.current === item}"
+                <button animate:flip="{{duration: 300}}" class:selected="{$currentTemplate.current === item}"
                    on:click="{() => select(item)}">
+                   <div class="flex flex-row">
                     {#if ($template[item].changed)}
                         <span class="flex absolute h-1.5 w-1.5 top-0 right-0 flex">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
@@ -272,15 +285,17 @@
                         </svg>
                         <span class="ml-4 font-medium truncate">{item}</span>
                     {/if}
-                </a>
+                    </div>
+                </button>
 
             {/each}
         </nav>
 
         <div class="sticky bottom-0 bg-inherit">
-            <Modal>
+            <Modal realButtonLabel="编辑现有稿件或新建投稿模板">
                 <a slot="open-modal" class="mt-2.5 mb-5 py-2 px-4 flex justify-center items-center bg-green-500 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-full"
-                        type="button">
+                    aria-hidden="true"
+                    type="button">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                          xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
@@ -290,18 +305,18 @@
                     <div class="form-control w-full max-w-xs">
                         <label class="label">
                             <span class="label-text">输入BV或av号可编辑现有稿件</span>
-                            <span class="label-text-alt">av971158452</span>
+                            <span aria-hidden="true" class="label-text-alt">av971158452</span>
                         </label>
                         <input type="text" bind:value={tempName} placeholder="{'未命名模板' + Object.keys($template).length}" class="input input-bordered w-full max-w-xs" />
                         <label class="label">
                             <span class="label-text-alt">输入其他将新建投稿模板</span>
-                            <span class="label-text-alt">BV1ip4y1x7Gi</span>
+                            <span aria-hidden="true"  class="label-text-alt">BV1ip4y1x7Gi</span>
                         </label>
                     </div>
 
                     <div class="modal-action">
                         <label for="{componentId}" on:click={add} class="btn btn-accent">添加模板</label>
-                        <label for="{componentId}" class="btn">Close</label>
+                        <label aria-hidden="true"  for="{componentId}" class="btn">Close</label>
                     </div>
                 </div>
             </Modal>

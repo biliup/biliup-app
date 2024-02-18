@@ -170,17 +170,19 @@
                     </button>
                 </div>
                 <form>
-                    <label class="block text-sm text-gray-800">用户名</label>
-                    <input bind:value={username} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
-                               type="text">
-
                     <div class="mt-4">
-                        <div class="flex items-center justify-between">
-                            <label class="block text-sm text-gray-800" for="password">密码</label>
-                        </div>
-
-                        <input bind:value={password} class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
-                               type="password">
+                        <label class="block text-sm text-gray-800" for="username">用户名</label>
+                        <input id="username"
+                            bind:value={username} 
+                            class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
+                            type="text">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm text-gray-800" for="password">密码</label>
+                        <input id="password"
+                            bind:value={password} 
+                            class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-blue-500 focus:outline-none focus:ring"
+                            type="password">
                     </div>
                     <label class="flex items-center mt-4">
                         <input bind:checked={rememberMe} class="form-checkbox" type="checkbox"/>
@@ -204,13 +206,13 @@
                     </label>
                     <div class="flex">
                         <input type="text" placeholder="国家代码"  bind:value={countryCode} class="input input-bordered w-[5.75rem]">
-                        <input type="text" placeholder="phone numbers"  bind:value={telephone} class="input ml-2 w-full">
+                        <input type="text" placeholder="手机号"  bind:value={telephone} class="input ml-2 w-full">
                     </div>
                     <label class="label">
                         <span class="label-text">验证码</span>
                     </label>
                     <div class="relative">
-                        <input type="text" placeholder="verification code"  bind:value={verificationCode} class="w-full pr-16 input input-primary">
+                        <input type="text" placeholder="验证码"  bind:value={verificationCode} class="w-full pr-16 input input-primary">
                         <button on:click={sendSms} class:loading={throttle}  disabled={throttle}
                                 class="absolute top-0 right-0 rounded-l-none btn btn-primary">
                             {#if !throttle}
@@ -226,15 +228,21 @@
                 </div>
                 <button class="btn btn-block mt-2.5" on:click={login_by_sms}>登录</button>
             {/if}
+
+            <!-- 用户名密码登录按钮 -->
             <div class="flex items-center justify-between mt-4">
                 <span class="w-1/5 border-b dark:border-gray-600 lg:w-1/5"></span>
-
-                <a on:click={() => loginMethod='password'} href="#" class="text-xs text-center text-gray-500 uppercase dark:text-gray-400 hover:underline">若登录失败，尝试其他登录方式</a>
+                <a on:click={() => loginMethod='password'} 
+                    on:keydown={() => loginMethod='password'}
+                    role="button"
+                    aria-label="用户名密码登录"
+                    href="#" class="text-xs text-center text-gray-500 uppercase dark:text-gray-400 hover:underline">若登录失败，尝试其他登录方式</a>
 
                 <span class="w-1/5 border-b dark:border-gray-400 lg:w-1/5"></span>
             </div>
 
             <div class="flex items-center mt-6 -mx-2">
+                <!-- 短信登录按钮 -->
                 <button type="button" on:click={() => loginMethod = "sms"}
                         class="flex items-center justify-center w-full px-6 py-2 mx-2 text-sm font-medium text-white transition-colors duration-200 transform bg-blue-500 rounded-md hover:bg-blue-400 focus:bg-blue-400 focus:outline-none">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,7 +251,8 @@
                     <span class="hidden mx-2 sm:inline">短信登录</span>
                 </button>
 
-                <a href="#" on:click={loginByQrcode}
+                <!-- 扫码登录按钮 -->
+                <button type="button" on:click={loginByQrcode}
                    class="flex items-center justify-center px-6 py-2 mx-2 w-full text-sm font-medium text-gray-500 transition-colors duration-200 transform bg-gray-300 rounded-md hover:bg-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -254,7 +263,7 @@
 <!--                        </path>-->
 <!--                    </svg>-->
                     <span class="hidden mx-2 sm:inline">扫码登录</span>
-                </a>
+                </button>
             </div>
         </div>
     </div>
