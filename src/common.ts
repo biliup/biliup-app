@@ -108,3 +108,11 @@ const outroAndDestroy = (instance) => {
         instance.$destroy();
     }
 };
+
+export const contentLimitation = {
+    titleLength: 80,
+    videoPartTitleLength: 80,
+    reprintUrlLength: 200,
+    individualTagLength: 20,
+    dynamicMessageLength: 233,
+}

@@ -42,3 +42,8 @@ bilibili投稿客户端，支持Windows，Linux，macOS。
 - [x] 多p按照文件名升序、降序
 - [ ] 远程部署agent，本地操作
 - [ ] 插件系统，如自动录播后上传
+
+## Development
+```bash
+tauri dev
+```
