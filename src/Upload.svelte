@@ -123,6 +123,10 @@
         if (!nocopyright) {
             noreprint = noReprint ? 1 : 0;
         }
+        if (selectedTemplate.desc){
+            // <input maxlength={} /> will only limits new inputs, if limitation changes, the existing value will not be automatically truncated
+            selectedTemplate.desc = selectedTemplate.desc.substring(0, contentLimitation.descriptionLengthByZone(selectedTemplate.tid));
+        }
 
         let tag = tags.join(',');
 
@@ -453,7 +457,9 @@
                 </label>
                 <textarea bind:value={selectedTemplate.desc}
                           class="textarea textarea-bordered w-full"
-                          cols="40" placeholder="简介补充: ..." rows="4"></textarea>
+                          cols="40" rows="4" placeholder="简介补充: ..."
+                          maxlength={contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}
+                ></textarea>
             </div>
             <div class="text-gray-700">
                 <label class="label">
@@ -461,7 +467,7 @@
                 </label>
                 <textarea bind:value={selectedTemplate.dynamic}
                           class="textarea textarea-bordered w-full"
-                          cols="40" placeholder="动态描述" rows="1"
+                          cols="40" rows="1" placeholder="动态描述"
                           maxlength={contentLimitation.dynamicMessageLength}
                 ></textarea>
             </div>
