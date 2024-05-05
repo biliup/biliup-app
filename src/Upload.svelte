@@ -2,7 +2,7 @@
     import Append from './Append.svelte';
     import {receive,currentTemplate, save_config, template} from './store';
     import {invoke} from '@tauri-apps/api/tauri';
-    import {archivePre, contentLimitation, createPop, partition} from "./common";
+    import {archivePre, contentLimitation, CopyrightType, createPop, partition} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
     import { fade, fly } from 'svelte/transition';
     import {flip} from 'svelte/animate';
@@ -14,15 +14,15 @@
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
     export let selected;
-    export let selectedTemplate;
+    export let selectedTemplate: {
+        copyright: number,
+        [key: string]: any;
+    };
     let oldSelected = selected;
     // let title: string = ;
-    let nocopyright: boolean;
-    $ : nocopyright = selectedTemplate?.copyright === 2;
+
     let noReprint = true;
-    function handleClick(e) {
-        selectedTemplate.copyright = e.target.checked ? 2 : 1;
-    }
+    let copyrightType: CopyrightType = CopyrightType.original;
 
     let edit = false;
 
@@ -120,7 +120,9 @@
         if (isDtime) {
             dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
-        if (!nocopyright) {
+
+        selectedTemplate.copyright = copyrightType;
+        if (copyrightType == CopyrightType.original) {
             noreprint = noReprint ? 1 : 0;
         }
         if (selectedTemplate.desc){
@@ -382,31 +384,30 @@
                           />
             </div>
             <div class="bg-[#fafcfd] border rounded-md px-2 py-1">
-                <div class="mb-3 flex justify-between items-center">
-                    <!--                <div>-->
-                    <!--                    <div class="relative inline-block w-10 mr-2 align-middle select-none">-->
-                    <!--                        bind:checked={nocopyright}-->
-                    <input checked={nocopyright} class="toggle" id="Orange"
-                           name="toggle" on:change={(event) => handleClick(event)}
-                           type="checkbox"/>
-                    <!--                        <label class="block overflow-hidden h-6 rounded-full bg-gray-100 cursor-pointer" for="Orange">-->
-                    <!--                        </label>-->
-                    <!--                    </div>-->
-                    <span class="mx-2 w-auto text-sm tracking-wide">
-                            是否转载
-                    </span>
-                    <!--                </div>-->
-                    <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                        <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text" maxlength={contentLimitation.reprintUrlLength}/>
+                <div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-bold">自制</span>
+                            <input type="radio" name="radio-10" class="radio checked" checked={copyrightType === CopyrightType.original} on:click={()=>{copyrightType = CopyrightType.original}} />
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-bold">转载</span>
+                            <input type="radio" name="radio-10" class="radio checked" checked={copyrightType === CopyrightType.reprint} on:click={()=>{copyrightType = CopyrightType.reprint}} />
+                        </label>
                     </div>
                 </div>
-                {#if !nocopyright}
+
+                {#if copyrightType === CopyrightType.original}
                     <div class="form-control">
                         <label class="label cursor-pointer">
                             <span class="label-text">自制声明：未经作者授权 禁止转载</span>
                             <input type="checkbox" bind:checked="{noReprint}" class="checkbox">
                         </label>
                     </div>
+                {:else}
+                    <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text" maxlength={contentLimitation.reprintUrlLength}/>
                 {/if}
             </div>
 

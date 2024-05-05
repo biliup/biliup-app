@@ -129,3 +129,8 @@ export const contentLimitation = {
     individualTagLength: 20,
     dynamicMessageLength: 233,
 }
+
+export enum CopyrightType {
+    original = 1,
+    reprint = 2,
+}
