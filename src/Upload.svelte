@@ -2,7 +2,7 @@
     import Append from './Append.svelte';
     import {receive,currentTemplate, save_config, template} from './store';
     import {invoke} from '@tauri-apps/api/tauri';
-    import {archivePre, createPop, partition} from "./common";
+    import {archivePre, contentLimitation, createPop, partition} from "./common";
     import FilePond, { registerPlugin, supported } from 'svelte-filepond';
     import { fade, fly } from 'svelte/transition';
     import {flip} from 'svelte/animate';
@@ -361,7 +361,8 @@
             </div>
             <input bind:value={selectedTemplate.title}
                    class="bg-[#f9fcfd] w-full text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                   placeholder="标题">
+                   placeholder="标题"
+                   maxlength={contentLimitation.titleLength}>
             <Append selectedTemplate="{selectedTemplate}"/>
             <p class="text-sm text-gray-300">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
@@ -392,7 +393,7 @@
                     </span>
                     <!--                </div>-->
                     <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                        <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text"/>
+                        <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text" maxlength={contentLimitation.reprintUrlLength}/>
                     </div>
                 </div>
                 {#if !nocopyright}
@@ -442,7 +443,9 @@
 
                 <input bind:value={tempTag} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleKeypress()}
                        placeholder="标签，回车输入"
-                       type="text"/>
+                       type="text"
+                       maxlength={contentLimitation.individualTagLength}
+                />
             </div>
             <div class="text-gray-700">
                 <label class="label">
@@ -458,7 +461,9 @@
                 </label>
                 <textarea bind:value={selectedTemplate.dynamic}
                           class="textarea textarea-bordered w-full"
-                          cols="40" placeholder="动态描述" rows="1"></textarea>
+                          cols="40" placeholder="动态描述" rows="1"
+                          maxlength={contentLimitation.dynamicMessageLength}
+                ></textarea>
             </div>
             <div class="flex items-center">
                 <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
