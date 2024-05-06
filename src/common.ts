@@ -127,6 +127,7 @@ export const contentLimitation = {
         return 250;
     },
     individualTagLength: 20,
+    tagsCount: 12,
     dynamicMessageLength: 233,
 }
 

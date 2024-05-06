@@ -110,7 +110,7 @@
         }
     }
 
-    let tempTag;
+    let tagInput: string;
     let autoSubmit = false;
     $: autoSubmit = !!selectedTemplate?.submitCallback;
     function submitCallback() {
@@ -130,8 +130,6 @@
             selectedTemplate.desc = selectedTemplate.desc.substring(0, contentLimitation.descriptionLengthByZone(selectedTemplate.tid));
         }
 
-        let tag = tags.join(',');
-
         let invokeMethod;
         let msg;
         let hires_params = {};
@@ -146,7 +144,7 @@
         invoke(invokeMethod, {
                 studio: {
                     ...selectedTemplate,
-                    tag: tag,
+                    tag: tags.join(','),
                     dtime: dtime,
                     no_reprint: noreprint,
                     ...hires_params,
@@ -174,20 +172,25 @@
         autoSubmit = false;
     }
 
-    function handleKeypress() {
-        if (tags.includes(tempTag)) {
+    function enterTag() {
+        if (!tagInput) {  // otherwise the new tag content is "undefined" or "null"
+            return;
+        }
+
+        if (tags.includes(tagInput)) {
             createPop("已有相同标签");
-            tempTag = null;
+            tagInput = "";
             return;
         }
-        if(tags.length > 12) {
-            createPop("标签数量超过12个，无法添加");
-            tempTag = null;
+        if (tags.length > contentLimitation.tagsCount) {
+            createPop(`标签数量超过${contentLimitation.tagsCount}个，无法添加`);
+            tagInput = "";
             return;
         }
-        tags = [...tags, tempTag];
+
+        tags = [...tags, tagInput];
         selectedTemplate.tag = tags.join(',');
-        tempTag = null;
+        tagInput = "";
         return false;
     }
 
@@ -446,7 +449,7 @@
                     </span>
                 {/each}
 
-                <input bind:value={tempTag} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleKeypress()}
+                <input bind:value={tagInput} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && enterTag()}
                        placeholder="标签，回车输入"
                        type="text"
                        maxlength={contentLimitation.individualTagLength}
@@ -495,6 +498,8 @@
                         </svg>
                         等待视频上传完后会自动提交...
                     </button>
+
+                    <!-- svelte-ignore a11y-missing-attribute -->
                     <a class="cursor-pointer" on:click={cancelSubmit}>
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-red-400 hover:stroke-rose-500 transition ease-in-out duration-150 ml-2.5 h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -510,9 +515,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .copyright {
-        @apply visible;
-    }
-</style>
