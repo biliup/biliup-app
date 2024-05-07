@@ -18,7 +18,7 @@ use app::error::Result;
 use app::{config_file, config_path, cookie_file, encode_hex, Credential};
 use futures::StreamExt;
 use tauri::async_runtime;
-use tauri::Window;
+use tauri::{Window, Manager};
 use tokio::sync::mpsc;
 use tracing::info;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -309,6 +309,12 @@ fn main() {
                 .with_writer(file_appender)
                 .with_filter(LevelFilter::INFO);
             Registry::default().with(stdout_log).with(file_layer).init();
+            #[cfg(debug_assertions)] // only include this code on debug builds
+            {
+                let window = _app.get_window("main").unwrap();
+                window.open_devtools();
+                window.close_devtools();
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
