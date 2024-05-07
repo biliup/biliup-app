@@ -7,7 +7,8 @@
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "tauri": "tauri dev"
+    "tauri": "tauri",
+    "tauri-dev": "tauri dev"
   },
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^4.0.3",
