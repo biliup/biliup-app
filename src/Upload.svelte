@@ -176,7 +176,7 @@
         autoSubmit = false;
     }
 
-    function enterTag() {
+    function handleTagEnter() {
         if (!tagInput) {  // otherwise the new tag content is "undefined" or "null"
             return;
         }
@@ -453,7 +453,7 @@
                     </span>
                 {/each}
 
-                <input bind:value={tagInput} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && enterTag()}
+                <input bind:value={tagInput} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleTagEnter()}
                        placeholder="标签，回车输入"
                        type="text"
                        maxlength={contentLimitation.individualTagLength}

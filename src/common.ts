@@ -111,7 +111,7 @@ const outroAndDestroy = (instance) => {
 
 export const contentLimitation = {
     titleLength: 80,
-    videoPartTitleLength: 80,
+    videoPartTitleLength: 80,  // actively limit the length at Progress.svelte
     reprintUrlLength: 200,
     descriptionLengthByZone: (tid: number) => {
         const descV2Enabled = [

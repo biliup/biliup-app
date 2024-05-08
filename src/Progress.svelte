@@ -3,6 +3,8 @@
     import {emit} from "@tauri-apps/api/event";
     import {getCurrent} from "@tauri-apps/api/window";
 
+    import {contentLimitation} from "./common";
+
     export let selectedTemplate;
     export let file;
     let complete = file.complete;
@@ -44,6 +46,14 @@
         await emit(strToHexCharCode(id));
         selectedTemplate.files = selectedTemplate.files.filter(value => value.id !== id);
     }
+
+    $: {
+        // Ensure the title is not too long
+        // Can't find anywhere else that can reliable access the title so modifying it here
+        if (file.title && typeof file.title === "string") {
+            file.title = file.title.substring(0, contentLimitation.videoPartTitleLength);
+        }
+    }
 </script>
 <div class="flex items-center justify-center space-x-2 px-1">
     <div class="parent-svg flex-none w-12 items-center justify-center">
@@ -70,7 +80,7 @@
         <div class="flex">
             <span class="w-full">
                 <div class="flex w-full justify-between">
-                    <input bind:value="{file.title}" class="bg-inherit w-full truncate"/>
+                    <input bind:value="{file.title}" class="bg-inherit w-full truncate" maxlength={contentLimitation.videoPartTitleLength}/>
                     <!--{title}-->
                     <div class="text-gray-500 min-w-fit text-sm">{(totalSize/1024/1024).toFixed(2)} MiB</div>
                 </div>
