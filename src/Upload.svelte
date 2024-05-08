@@ -460,12 +460,13 @@
                 />
             </div>
             <div class="text-gray-700">
-                <label class="label">
+                <!-- Svelte: A11y: A form label must be associated with a control. -->
+                <div class="label">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">
                         简介
                         <sub>{selectedTemplate.desc.length}/{contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}</sub>
                     </span>
-                </label>
+                </div>
                 <textarea bind:value={selectedTemplate.desc}
                           class="textarea textarea-bordered w-full"
                           cols="40" rows="4" placeholder="简介补充: ..."
@@ -473,12 +474,13 @@
                 ></textarea>
             </div>
             <div class="text-gray-700">
-                <label class="label">
+                <!-- Svelte: A11y: A form label must be associated with a control. -->
+                <div class="label">
                     <span class="text-sm font-bold text-gray-500 tracking-wide">
                         粉丝动态
                         <sub>{selectedTemplate.dynamic.length}/{contentLimitation.dynamicMessageLength}</sub>
                     </span>
-                </label>
+                </div>
                 <textarea bind:value={selectedTemplate.dynamic}
                           class="textarea textarea-bordered w-full"
                           cols="40" rows="1" placeholder="动态描述"
