@@ -15,7 +15,11 @@
 
     export let selected;
     export let selectedTemplate: {
+        title: string,
         copyright: number,
+        tid: number,
+        desc: string,
+        dynamic: string,
         [key: string]: any;
     };
     let oldSelected = selected;
@@ -457,7 +461,10 @@
             </div>
             <div class="text-gray-700">
                 <label class="label">
-                    <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
+                    <span class="text-sm font-bold text-gray-500 tracking-wide">
+                        简介
+                        <sub>{selectedTemplate.desc.length}/{contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}</sub>
+                    </span>
                 </label>
                 <textarea bind:value={selectedTemplate.desc}
                           class="textarea textarea-bordered w-full"
@@ -467,7 +474,10 @@
             </div>
             <div class="text-gray-700">
                 <label class="label">
-                    <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
+                    <span class="text-sm font-bold text-gray-500 tracking-wide">
+                        粉丝动态
+                        <sub>{selectedTemplate.dynamic.length}/{contentLimitation.dynamicMessageLength}</sub>
+                    </span>
                 </label>
                 <textarea bind:value={selectedTemplate.dynamic}
                           class="textarea textarea-bordered w-full"
