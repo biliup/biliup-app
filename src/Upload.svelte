@@ -157,6 +157,7 @@
         .then((res: any) => {
             console.log(res);
             createPop(`${selected} - ${msg}成功: ${res.bvid}`, 5000, 'Success');
+            lastSubmissionTime = new Date();
         }).catch((e) => {
                 createPop(e, 5000);
                 console.log(e);
@@ -330,6 +331,8 @@
             type: 'local',
         },
     }] : null;
+
+    let lastSubmissionTime: Date;
 </script>
 <div in:fly="{{ y: 200, duration: 400 }}">
     <div class="px-6 pt-3 pb-10 my-2 mr-12" >
@@ -523,6 +526,11 @@
                           font-semibold  focus:outline-none focus:shadow-outline hover:bg-blue-600 shadow-lg cursor-pointer transition ease-in duration-300" on:click|preventDefault={submit} type="submit">
                     提交视频
                 </button>
+            {/if}
+            {#if lastSubmissionTime}
+                <div class="text-sm text-gray-500 text-center">
+                    <p>上次提交时间: {lastSubmissionTime?.toLocaleString()}</p>
+                </div>
             {/if}
         </div>
     </div>
