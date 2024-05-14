@@ -154,9 +154,9 @@
                     ...hires_params,
                 }
         })
-        .then((res: any) => {
+        .then((res: {code: number, data: {aid: number, bvid: string}, message: string}) => {
             console.log(res);
-            createPop(`${selected} - ${msg}成功: ${res.bvid}`, 5000, 'Success');
+            createPop(`${selected} - ${msg}成功: ${res.data.bvid}`, 5000, 'Success');
             lastSubmissionTime = new Date();
         }).catch((e) => {
                 createPop(e, 5000);
