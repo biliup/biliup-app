@@ -54,14 +54,6 @@
         await emit(strToHexCharCode(id));
         selectedTemplate.files = selectedTemplate.files.filter(value => value.id !== id);
     }
-
-    $: {
-        // Ensure the title is not too long
-        // Can't find anywhere else that can reliable access the title so modifying it here
-        if (file.title && typeof file.title === "string") {
-            file.title = file.title.substring(0, contentLimitation.videoPartTitleLength);
-        }
-    }
 </script>
 <div class="flex items-center justify-center space-x-2 px-1">
     <div class="parent-svg flex-none w-12 items-center justify-center">
@@ -88,7 +80,11 @@
         <div class="flex">
             <span class="w-full">
                 <div class="flex w-full justify-between">
-                    <input bind:value="{file.title}" class="bg-inherit w-full truncate" maxlength={contentLimitation.videoPartTitleLength}/>
+                    {#if file.title.length <= contentLimitation.videoPartTitleLength}
+                        <input bind:value="{file.title}" class="bg-inherit w-full truncate"/>
+                    {:else}
+                        <input bind:value="{file.title}" class="bg-inherit w-full truncate bg-red-100 border border-red-300"/>
+                    {/if}
                     <!--{title}-->
                     <div class="text-gray-500 min-w-fit text-sm">{(totalSize/1024/1024).toFixed(2)} MiB</div>
                 </div>

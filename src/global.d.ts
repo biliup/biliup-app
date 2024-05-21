@@ -3,6 +3,7 @@
 export type SelectedTemplate = {
     title: string,
     copyright: number,
+    source: string,
     tid: number,
     desc: string,
     dynamic: string,
