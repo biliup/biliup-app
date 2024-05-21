@@ -13,7 +13,7 @@
     import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
-    export let selected;
+    export let selected: string;
     export let selectedTemplate: SelectedTemplate;
     let oldSelected = selected;
     // let title: string = ;
@@ -36,6 +36,10 @@
     }
 
     async function del() {
+        if (!(await confirm(`确定要移除模板 ${selected} 吗？`))) { // confirm() is returning a Promise
+            return;
+        }
+
         let len = Object.keys($template).length;
         const keys = Object.keys($template);
         const index = keys.indexOf(selected);
