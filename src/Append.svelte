@@ -86,7 +86,7 @@
              on:finalize="{handleDndFinalize}" class="bg-[#fafcfd] flex flex-col rounded-lg">
             {#each selectedTemplate.files as file(file.id)}
                 <div class="shadow-sm rounded-lg" animate:flip="{{duration: flipDurationMs}}">
-                    <Progress file="{file}" bind:selectedTemplate="{selectedTemplate}"/>
+                    <Progress bind:file={file} bind:selectedTemplate={selectedTemplate}/>
                     <!--{file.title}-->
                 </div>
             {/each}

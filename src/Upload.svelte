@@ -118,12 +118,12 @@
     let autoSubmit = false;
     $: autoSubmit = !!selectedTemplate?.submitCallback;
     function submitCallback() {
-        if (!checkInputFields()) {
-            createPop("部分内容长度不符合要求，无法提交", 5000);
-            return;
-        }
+        // if (!checkInputFields(true)) {
+        //     createPop("部分内容长度不符合要求，无法提交", 5000);
+        //     return;
+        // }
 
-        selectedTemplate.videos = selectedTemplate?.files;
+        selectedTemplate.videos = selectedTemplate.files;
         let dtime = null;
         let noreprint = null;
         if (isDtime) {
@@ -353,61 +353,115 @@
 
     let lastSubmissionTime: Date;
 
-    function checkInputFields(): boolean {
+    let inputsAreValid: boolean;
+    $: {
+        selectedTemplate; // for reactivity
+        tags; // for reactivity
+        copyrightType; // for reactivity
+        inputsAreValid = checkInputFields(false);
+    }
+    let inputsViolations: string[];
+
+    function checkInputFields(createPopup: boolean): boolean {
         let canSubmit = true;
+        let currentInputViolations = [];
 
         if (selectedTemplate.title.length > contentLimitation.titleLength) {
-            createPop(`标题长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${selectedTemplate.title.length}个字符`, 5000);
+            if (createPopup){
+                createPop(`标题长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${selectedTemplate.title.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`标题长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${selectedTemplate.title.length}个字符`);
+            }
             canSubmit = false;
         }
 
         if (selectedTemplate.title.length === 0) {
-            createPop(`标题不能为空`, 5000);
+            // if (createPopup) createPop(`标题不能为空`, 5000);
+            if (createPopup) {
+                createPop(`标题不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`标题不能为空`);
+            }
             canSubmit = false;
         }
 
         if (copyrightType == CopyrightType.reprint && selectedTemplate.source.length > contentLimitation.reprintUrlLength){
-            createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
+            // if (createPopup) createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
+            if (createPopup) {
+                createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`);
+            }
             canSubmit = false;
         }
 
         if (copyrightType == CopyrightType.reprint && selectedTemplate.source.length === 0){
-            createPop(`转载来源不能为空`, 5000);
+            if (createPopup) {
+                createPop(`转载来源不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`转载来源不能为空`);
+            }
             canSubmit = false;
         }
 
         if (tags.length > contentLimitation.tagsCount) {
-            createPop(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`, 5000);
+            // if (createPopup) createPop(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`, 5000);
+            if (createPopup) {
+                createPop(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`, 5000);
+            } else {
+                currentInputViolations.push(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`);
+            }
             canSubmit = false;
         }
 
         if (tags.length === 0) {
-            createPop(`标签不能为空`, 5000);
+            if (createPopup) {
+                createPop(`标签不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`标签不能为空`);
+            }
             canSubmit = false;
         }
 
         if (selectedTemplate.desc.length > contentLimitation.descriptionLengthByZone(selectedTemplate.tid)) {
-            createPop(`简介长度超过${contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}个字符，无法提交，当前为${selectedTemplate.desc.length}个字符`, 5000);
+            if (createPopup) {
+                createPop(`简介长度超过${contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}个字符，无法提交，当前为${selectedTemplate.desc.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`简介长度超过${contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}个字符，无法提交，当前为${selectedTemplate.desc.length}个字符`);
+            }
             canSubmit = false;
         }
 
         if (selectedTemplate.dynamic.length > contentLimitation.dynamicMessageLength) {
-            createPop(`粉丝动态长度超过${contentLimitation.dynamicMessageLength}个字符，无法提交，当前为${selectedTemplate.dynamic.length}个字符`, 5000);
+            if (createPopup) {
+                createPop(`粉丝动态长度超过${contentLimitation.dynamicMessageLength}个字符，无法提交，当前为${selectedTemplate.dynamic.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`粉丝动态长度超过${contentLimitation.dynamicMessageLength}个字符，无法提交，当前为${selectedTemplate.dynamic.length}个字符`);
+            }
             canSubmit = false;
         }
 
         if (selectedTemplate.files.length === 0) {
-            createPop(`新增稿件分P不能为空`, 5000);
+            if (createPopup) {
+                createPop(`新增稿件分P不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`新增稿件分P不能为空`);
+            }
             canSubmit = false;
         }
 
         selectedTemplate.files.forEach((file, index) => {
             if (file.title.length > contentLimitation.titleLength) {
-                createPop(`P${index+1} ${file.title} 名称长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${file.title.length}个字符`, 5000);
+                if (createPopup) {
+                    createPop(`P${index+1} ${file.title} 名称长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${file.title.length}个字符`, 5000);
+                } else {
+                    currentInputViolations.push(`P${index+1} ${file.title} 名称长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${file.title.length}个字符`);
+                }
                 canSubmit = false;
             }
         });
 
+        inputsViolations = currentInputViolations;
         return canSubmit;
     }
 </script>
@@ -462,7 +516,7 @@
                        placeholder="标题，长度限制{contentLimitation.titleLength}个字符" />
             {/if}
 
-            <Append selectedTemplate="{selectedTemplate}"/>
+            <Append bind:selectedTemplate={selectedTemplate}/>
             <p class="text-sm text-gray-300">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
@@ -620,6 +674,12 @@
                     </a>
                 </div>
             {:else}
+                {#if !inputsAreValid}
+                    <h3 class="text-center text-xl font-extrabold text-red-500 decoration-8">部分内容长度不符合要求，请谨慎提交</h3>
+                    {#each inputsViolations as violation}
+                        <p class="text-center text-red-500">{violation}</p>
+                    {/each}
+                {/if}
                 <button class="p-2 my-5 w-full flex justify-center bg-blue-500 text-gray-100 rounded-full tracking-wide
                           font-semibold  focus:outline-none focus:shadow-outline hover:bg-blue-600 shadow-lg cursor-pointer transition ease-in duration-300" on:click|preventDefault={submit} type="submit">
                     提交视频

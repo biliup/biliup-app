@@ -6,6 +6,7 @@ import {crossfade, fly} from "svelte/transition";
 import {listen} from "@tauri-apps/api/event";
 import {createPop} from "./common";
 import {selectedTemplate} from "./Upload.svelte";
+import type {BiliupConfig} from "./global";
 
 
 export const isLogin = writable(false);
@@ -190,15 +191,23 @@ export async function speed() {
 
 }
 
-export async function save_config(fn) {
+export async function save_config(configModifier: (config: BiliupConfig) => void) {
+    // TODO: use Writable for configs
     try {
-        let res = await invoke('load',)
-        fn(res);
+        let config = await load_config();
+        configModifier(config);
         return await invoke('save', {
-            config: res
+            config: config
         });
     } catch (e) {
         createPop(e, 5000);
         console.log(e);
     }
+}
+
+
+export async function load_config(): Promise<BiliupConfig> {
+    let config: BiliupConfig = await invoke("load");
+    console.log("config", config);
+    return config;
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {currentTemplate, template, save_config, isLogin} from "./store";
+    import {currentTemplate, template, save_config, isLogin, load_config} from "./store";
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
     import {invoke} from "@tauri-apps/api/tauri";
@@ -111,16 +111,21 @@
     let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
     let line = 'auto';
     let limit = 3;
+    let checkInputsBeforeSubmit: boolean = true;
 
     async function loadSettings() {
-        let ret = await invoke('load');
-        console.log(ret);
+        let ret = await load_config();
         if (ret.line === null) {
             line = 'auto';
         } else {
             line = ret.line;
         }
         limit = <number>ret['limit'];
+        if (ret.checkInputsBeforeSubmit == undefined || ret.checkInputsBeforeSubmit == null) {
+            checkInputsBeforeSubmit = true;
+        } else {
+            checkInputsBeforeSubmit = ret.checkInputsBeforeSubmit;
+        }
     }
 
     async function saveSettings() {
@@ -131,12 +136,14 @@
                 ret.line = line;
             }
             ret.limit = limit;
+            ret.checkInputsBeforeSubmit = checkInputsBeforeSubmit;
         })
     }
 
     let tempName: string;
 
     import {readDir, BaseDirectory, removeFile, renameFile, copyFile} from '@tauri-apps/api/fs';
+    import type {BiliupConfig} from "./global";
     // Reads the `$APPDIR/users` directory recursively
     const entries = readDir('biliup/users', { dir: BaseDirectory.Config}).then(entries=> {
         for (const entry of entries) {
@@ -235,6 +242,11 @@
                             <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
                         {/each}
                     </div>
+<!--                    <h4>-->
+<!--                        提交前检查内容长度：-->
+<!--                        <input type="checkbox" bind:value={checkInputsBeforeSubmit}>-->
+<!--                    </h4>-->
+
                 </div>
 
                 <div class="modal-action">
