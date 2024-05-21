@@ -14,14 +14,7 @@
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
     export let selected;
-    export let selectedTemplate: {
-        title: string,
-        copyright: number,
-        tid: number,
-        desc: string,
-        dynamic: string,
-        [key: string]: any;
-    };
+    export let selectedTemplate: SelectedTemplate;
     let oldSelected = selected;
     // let title: string = ;
 
@@ -245,6 +238,7 @@
 
     import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
     import {fetch, ResponseType} from "@tauri-apps/api/http";
+    import type {SelectedTemplate} from "./global";
     // Register the plugins
     registerPlugin(
         FilePondPluginFileValidateType,

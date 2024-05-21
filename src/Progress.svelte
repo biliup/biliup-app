@@ -1,11 +1,12 @@
-<script>
+<script lang="ts">
     import {tweened} from "svelte/motion";
     import {emit} from "@tauri-apps/api/event";
     import {getCurrent} from "@tauri-apps/api/window";
 
     import {contentLimitation} from "./common";
+    import type {SelectedTemplate} from "./global";
 
-    export let selectedTemplate;
+    export let selectedTemplate: SelectedTemplate;
     export let file;
     let complete = file.complete;
     let progress = 0;
@@ -43,6 +44,13 @@
         return hexCharCode.join("");
     }
     async function remove() {
+        let index = selectedTemplate.files.findIndex(value => value.id === id);
+
+        // TODO: change confirmation prompt to modal
+        if (!(await confirm(`确定要移除 ${selectedTemplate.files[index].title} 吗？`))) { // confirm() is returning a Promise
+            return;
+        }
+
         await emit(strToHexCharCode(id));
         selectedTemplate.files = selectedTemplate.files.filter(value => value.id !== id);
     }
