@@ -11,11 +11,10 @@
 
     let face = 'noface.jpg';
     let name = null;
-    invoke('get_myinfo').then((ret) => {
-        console.log(ret);
-        fetch(<string>ret['data']['face'], {method: "GET"}).then((res)=>{
-            face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
-        })
+    invoke('get_myinfo').then(async (ret) => {
+        console.log("get_myinfo", ret);
+        let resp = await fetch(<string>ret['data']['face'], {method: "GET"});
+        face = 'data:image/jpeg;base64,' + arrayBufferToBase64(await resp.arrayBuffer());
         name = ret['data']['name'];
     });
 
@@ -150,6 +149,7 @@
             console.log(`Entry: ${entry.path}`);
             // console.log("name ", entry.name);
             invoke('get_myinfo', {fileName: `users/${entry.name}`}).then(ret => {
+                console.log("get_myinfo", ret);
                 var newVar = {
                     name: ret['data']['name'],
                     face: 'noface.jpg',
@@ -173,13 +173,16 @@
     }
     let user;
     async function processChangeUser() {
-        console.log(user)
+        console.log("user", user);
         await copyFile(`biliup/users/${user.mid}.json`, 'biliup/cookies.json', { dir: BaseDirectory.Config });
         await invoke('logout');
         face = user.face;
         name = user.name;
         // isLogin.set(false);
     }
+
+    $: console.log("user", user);
+    $: console.log("face", face);
 </script>
 <div class="flex flex-col w-72 h-screen px-4 pt-8 bg-inherit overflow-auto"
      transition:fly={{delay: 400, x: -100}}>

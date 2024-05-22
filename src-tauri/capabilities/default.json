@@ -17,7 +17,11 @@
     "http:default",
     {
       "identifier": "fs:default",
-      "allow": [{ "path": "$CONFIG/**" }]
+      "allow": [{"path": "$CONFIG/**"}, {"path": "$APPDATA/**"}]
+    },
+    {
+      "identifier": "fs:read-dirs",
+      "allow": [{"path": "$CONFIG/**"}, {"path": "$APPDATA/**"}]
     },
     {
       "identifier": "http:allow-fetch",
