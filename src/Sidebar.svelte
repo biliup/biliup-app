@@ -10,10 +10,11 @@
     import {createPop} from "./common";
     import {readDir, BaseDirectory, remove, copyFile} from "@tauri-apps/plugin-fs";
     import type {BiliupConfig} from "./global";
+    import {INVOKE_COMMANDS} from "./lib/constants";
 
     let face = 'noface.jpg';
     let name = null;
-    invoke('get_myinfo').then(async (ret) => {
+    invoke('get_myinfo', {fileName: "cookies.json"}).then(async (ret) => {
         console.log("get_myinfo", ret);
         let resp = await fetch(<string>ret['data']['face'], {method: "GET"});
         face = 'data:image/jpeg;base64,' + arrayBufferToBase64(await resp.arrayBuffer());
@@ -106,11 +107,16 @@
         $currentTemplate.current = item;
     }
 
-    async function openConfigDir(){
+    async function getConfigDir(): Promise<string>{
         let configDirectory = await configDir();
         if (!configDirectory.endsWith('/')) {
             configDirectory += '/';
         }
+        return configDirectory;
+    }
+
+    async function openConfigDir(){
+        let configDirectory = await getConfigDir();
         configDirectory += "biliup";
         console.log("openConfigDir", configDirectory);
         await open(configDirectory);
@@ -151,13 +157,12 @@
 
     // Reads the `$APPDIR/users` directory recursively
     async function readBiliupUsersDir() {
-        let entries = await readDir(await configDir() + "/biliup/users");
-        // console.log("entries", entries);
+        let entries = await readDir(await getConfigDir() + "biliup/users");
+        console.log("entries", entries);
         for (const entry of entries) {
-            console.log(`Entry: ${entry.path}`);
-            // console.log("name ", entry.name);
-            let ret = await invoke('get_myinfo', {fileName: `users/${entry.name}`});
-            console.log("get_myinfo", ret);
+            console.log("entry.name ", entry.name);
+            let ret = await invoke(INVOKE_COMMANDS.getOthersMyinfo, {fileName: `users/${entry.name}`});
+            console.log(INVOKE_COMMANDS.getOthersMyinfo, ret);
             let newVar = {
                 name: ret['data']['name'],
                 face: 'noface.jpg',
@@ -178,13 +183,13 @@
     let people = [];
     async function processNewUser() {
         await invoke('logout');
-        await remove('biliup/cookies.json', { dir: BaseDirectory.Config });
+        await remove(`${await configDir()}/biliup/cookies.json`);
         isLogin.set(false);
     }
     let user;
     async function processChangeUser() {
         console.log("user", user);
-        await copyFile(`biliup/users/${user.mid}.json`, 'biliup/cookies.json', { dir: BaseDirectory.Config });
+        await copyFile(`${await configDir()}/biliup/users/${user.mid}.json`, `${await configDir()}/biliup/cookies.json`);
         await invoke('logout');
         face = user.face;
         name = user.name;

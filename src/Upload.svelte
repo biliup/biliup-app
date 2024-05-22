@@ -2,7 +2,8 @@
     import Append from './Append.svelte';
     import {currentTemplate, save_config, template} from './store';
     import {invoke} from "@tauri-apps/api/core";
-    import {archivePre, contentLimitation, CopyrightType, createPop, partition} from "./common";
+    import {archivePre, createPop, partition} from "./common";
+    import {contentLimitation, CopyrightType} from "./lib/constants";
     import FilePond, {registerPlugin} from 'svelte-filepond';
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';

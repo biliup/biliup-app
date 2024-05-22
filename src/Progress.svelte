@@ -3,7 +3,7 @@
     import {emit} from "@tauri-apps/api/event";
     import {getCurrent} from "@tauri-apps/api/window";
 
-    import {contentLimitation} from "./common";
+    import {contentLimitation} from "./lib/constants";
     import type {SelectedTemplate} from "./global";
 
     export let selectedTemplate: SelectedTemplate;

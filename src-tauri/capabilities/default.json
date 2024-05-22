@@ -27,6 +27,10 @@
       "allow": [{"path": "$CONFIG/**"}, {"path": "$APPDATA/**"}]
     },
     {
+      "identifier": "fs:allow-copy-file",
+      "allow": [{"path": "$CONFIG/**"}, {"path": "$APPDATA/**"}]
+    },
+    {
       "identifier": "http:allow-fetch",
         "allow": ["http://**", "https://archive.biliimg.com/*","https://*.hdslb.com/*"]
     }
