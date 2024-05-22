@@ -1,17 +1,17 @@
-import {writable} from "svelte/store";
+import {type Writable, writable} from "svelte/store";
 import {open} from "@tauri-apps/plugin-dialog";
 import {sep} from "@tauri-apps/api/path";
 import {invoke} from "@tauri-apps/api/core";
 import {crossfade, fly} from "svelte/transition";
 import {listen} from "@tauri-apps/api/event";
 import {createPop} from "./common";
-import type {BiliupConfig} from "./global";
+import type {BiliupConfig, SelectedTemplate} from "./global";
 
 
 export const isLogin = writable(false);
 export const template = writable({});
 
-export const currentTemplate = writable({
+export const currentTemplate: Writable<{current: string, selectedTemplate: SelectedTemplate}> = writable({
     current: '',
     selectedTemplate: {
         title: '',
@@ -34,6 +34,7 @@ export const [send, receive] = crossfade({
     },
 });
 export const fileselect = () => {
+    console.log("fileselect()")
     let properties = {
         // defaultPath: 'C:\\',
         multiple: true,
@@ -44,13 +45,14 @@ export const fileselect = () => {
         }]
     };
     open(properties).then((pathStr) => {
-        console.log(pathStr);
+        console.log("pathStr", pathStr);
         if (!pathStr) return;
         attach(pathStr);
     });
 };
 
-export function attach(files) {
+export function attach(files: any[]) {
+    console.log("attach(files)", files);
     currentTemplate.update(temp => {
         function findFile(file) {
             return temp.selectedTemplate['files'].find((existingFile) => existingFile.id === file);
@@ -61,8 +63,7 @@ export function attach(files) {
                 createPop('请上传非重复视频！');
                 continue;
             }
-            let split = file.split(sep);
-            let filename = split[split.length - 1];
+            let filename = file.name;
 
             // temp['files'] = [...temp['files'], ...event.target.files];
             temp.selectedTemplate['files'].push({
@@ -87,8 +88,8 @@ export function attach(files) {
     });
 }
 
-function allComplete(files, temp) {
-    // console.log(temp);
+function allComplete(files: SelectedTemplate['files'], temp: SelectedTemplate) {
+    console.log("allComplete(files, temp)", files, temp);
     for (const file of files) {
         if (!file.complete && !file.process && temp.atomicInt < 1) {
             temp.atomicInt++;
@@ -101,8 +102,9 @@ function allComplete(files, temp) {
     return true;
 }
 
-function upload(video, temp) {
+function upload(video: {title: string, filename: string, desc: string, [key:string]: any}, temp) {
     // const files = [];
+    console.log("upload(video, temp)", video, temp);
     video.start = Date.now();
     invoke('upload', {
         video: video

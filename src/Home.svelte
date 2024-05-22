@@ -49,7 +49,7 @@
     progress();
     speed();
     listen("tauri://file-drop", (date) => {
-        console.log("1", date);
+        console.log("tauri://file-drop", date);
         attach(date.payload);
         $fileHover = false;
         // setContext("hover", fileHover);
