@@ -8,6 +8,8 @@
     import {configDir} from "@tauri-apps/api/path";
     import Modal from "./Modal.svelte";
     import {createPop} from "./common";
+    import {readDir, BaseDirectory, remove, copyFile} from "@tauri-apps/plugin-fs";
+    import type {BiliupConfig} from "./global";
 
     let face = 'noface.jpg';
     let name = null;
@@ -147,30 +149,32 @@
 
     let tempName: string;
 
-    import {readDir, BaseDirectory, remove, copyFile} from "@tauri-apps/plugin-fs";
-    import type {BiliupConfig} from "./global";
     // Reads the `$APPDIR/users` directory recursively
-    const entries = readDir('biliup/users', { dir: BaseDirectory.Config}).then(entries=> {
+    async function readBiliupUsersDir() {
+        let entries = await readDir(await configDir() + "/biliup/users");
+        // console.log("entries", entries);
         for (const entry of entries) {
             console.log(`Entry: ${entry.path}`);
             // console.log("name ", entry.name);
-            invoke('get_myinfo', {fileName: `users/${entry.name}`}).then(ret => {
-                console.log("get_myinfo", ret);
-                var newVar = {
-                    name: ret['data']['name'],
-                    face: 'noface.jpg',
-                    mid: ret['data']['mid']
-                };
-                user = newVar;
-                people = [...people, newVar]
-                fetch(<string>ret['data']['face'], {method: "GET"}).then((res)=>{
-                    newVar.face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
-                    people = [...people]
-                })
-            })
+            let ret = await invoke('get_myinfo', {fileName: `users/${entry.name}`});
+            console.log("get_myinfo", ret);
+            let newVar = {
+                name: ret['data']['name'],
+                face: 'noface.jpg',
+                mid: ret['data']['mid']
+            };
+            user = newVar;
+            people = [...people, newVar]
+            let res = await fetch(<string>ret['data']['face'], {method: "GET"});
+            newVar.face = 'data:image/jpeg;base64,' + arrayBufferToBase64(await res.arrayBuffer());
+            people = [...people]
         }
-        return ;
+    }
+
+    readBiliupUsersDir().then(() => {
+        console.log("people", people);
     });
+
     let people = [];
     async function processNewUser() {
         await invoke('logout');
