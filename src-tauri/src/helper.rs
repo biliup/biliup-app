@@ -60,7 +60,7 @@ pub fn cookie_file() -> error::Result<PathBuf> {
 }
 
 pub fn config_path() -> error::Result<PathBuf> {
-    // TODO: maybe use tauri's PathResolver 
+    // TODO: maybe use tauri's PathResolver
     let mut config_dir: PathBuf = dirs_next::config_dir()
         .ok_or_else(|| error::Error::Err("config_dir".to_string()))?;
     config_dir.push("biliup");
