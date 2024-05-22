@@ -105,7 +105,13 @@
     }
 
     async function openConfigDir(){
-        await open(await configDir()+'biliup');
+        let configDirectory = await configDir();
+        if (!configDirectory.endsWith('/')) {
+            configDirectory += '/';
+        }
+        configDirectory += "biliup";
+        console.log("openConfigDir", configDirectory);
+        await open(configDirectory);
     }
     let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
     let line = 'auto';
