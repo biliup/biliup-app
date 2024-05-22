@@ -1,11 +1,10 @@
 import {writable} from "svelte/store";
-import {open} from "@tauri-apps/api/dialog";
+import {open} from "@tauri-apps/plugin-dialog";
 import {sep} from "@tauri-apps/api/path";
-import {invoke} from "@tauri-apps/api/tauri";
+import {invoke} from "@tauri-apps/api/core";
 import {crossfade, fly} from "svelte/transition";
 import {listen} from "@tauri-apps/api/event";
 import {createPop} from "./common";
-import {selectedTemplate} from "./Upload.svelte";
 import type {BiliupConfig} from "./global";
 
 

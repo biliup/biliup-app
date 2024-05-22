@@ -14,7 +14,9 @@ use tokio::sync::mpsc::UnboundedSender;
 use std::sync::{Arc, RwLock};
 use biliup::uploader::bilibili::BiliBili;
 
-pub mod error;
+// pub mod error;
+// use crate::error;
+use crate::error;
 
 #[derive(Default)]
 pub struct Credential {
@@ -58,7 +60,8 @@ pub fn cookie_file() -> error::Result<PathBuf> {
 }
 
 pub fn config_path() -> error::Result<PathBuf> {
-    let mut config_dir = tauri::api::path::config_dir()
+    // TODO: maybe use tauri's PathResolver 
+    let mut config_dir: PathBuf = dirs_next::config_dir()
         .ok_or_else(|| error::Error::Err("config_dir".to_string()))?;
     config_dir.push("biliup");
     if !config_dir.exists() {

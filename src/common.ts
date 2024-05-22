@@ -8,7 +8,7 @@ import {writable} from "svelte/store";
 import Pop from "./Pop.svelte";
 import {check_outros, group_outros, transition_out} from "svelte/internal";
 import Modal from "./Modal.svelte";
-import {invoke} from "@tauri-apps/api";
+import {invoke} from "@tauri-apps/api/core";
 
 export let partition = writable(null);
 

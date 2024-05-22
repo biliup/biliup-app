@@ -1,10 +1,10 @@
 <script lang="ts">
-    import {isLogin} from './store.js';
+    import {isLogin} from './store';
     import {fade, scale} from 'svelte/transition';
-    import {invoke} from '@tauri-apps/api/tauri';
+    import {invoke} from '@tauri-apps/api/core';
     import {createPop, notifyHistory} from "./common";
     import QrCode from "svelte-qrcode";
-    import {open} from "@tauri-apps/api/shell";
+    import {open} from "@tauri-apps/plugin-shell";
 
     let rememberMe: boolean = false;
     let username;

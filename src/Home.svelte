@@ -3,7 +3,7 @@
     import Upload from './Upload.svelte';
     import {attach, progress,speed, template, currentTemplate} from "./store";
     import {listen} from "@tauri-apps/api/event";
-    import {invoke} from "@tauri-apps/api/tauri";
+    import {invoke} from "@tauri-apps/api/core";
     import {createPop} from "./common";
     import {setContext} from "svelte";
     import {writable} from "svelte/store";

@@ -1,7 +1,7 @@
 <script lang="ts">
     import Append from './Append.svelte';
     import {currentTemplate, save_config, template} from './store';
-    import {invoke} from '@tauri-apps/api/tauri';
+    import {invoke} from "@tauri-apps/api/core";
     import {archivePre, contentLimitation, CopyrightType, createPop, partition} from "./common";
     import FilePond, {registerPlugin} from 'svelte-filepond';
     import {fly} from 'svelte/transition';
@@ -13,7 +13,7 @@
     import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
     import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
-    import {fetch, ResponseType} from "@tauri-apps/api/http";
+    import {fetch} from "@tauri-apps/plugin-http";
     import type {SelectedTemplate} from "./global";
 
     export let selected: string;
@@ -322,7 +322,7 @@
             progress(false, 0, 0);
 
             // Should call the load method with a file object or blob when done
-            fetch(source, {method: "GET", responseType: ResponseType.Binary}).then((res) => {
+            fetch(source, {method: "GET"}).then((res) => {
                 load(new Blob([new Uint8Array(<number[]>res.data)], {type: res.headers['content-type']}));
             }).catch((e) => {
 

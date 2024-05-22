@@ -2,9 +2,9 @@
     import {currentTemplate, template, save_config, isLogin, load_config} from "./store";
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
-    import {invoke} from "@tauri-apps/api/tauri";
-    import {fetch, ResponseType} from "@tauri-apps/api/http";
-    import {open} from "@tauri-apps/api/shell";
+    import {invoke} from "@tauri-apps/api/core";
+    import {fetch} from "@tauri-apps/plugin-http";
+    import {open} from "@tauri-apps/plugin-shell";
     import {configDir} from "@tauri-apps/api/path";
     import Modal from "./Modal.svelte";
     import {createPop} from "./common";
@@ -13,7 +13,7 @@
     let name = null;
     invoke('get_myinfo').then((ret) => {
         console.log(ret);
-        fetch(<string>ret['data']['face'], {method: "GET", responseType: ResponseType.Binary}).then((res)=>{
+        fetch(<string>ret['data']['face'], {method: "GET"}).then((res)=>{
             face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
         })
         name = ret['data']['name'];
@@ -142,7 +142,7 @@
 
     let tempName: string;
 
-    import {readDir, BaseDirectory, removeFile, renameFile, copyFile} from '@tauri-apps/api/fs';
+    import {readDir, BaseDirectory, remove, copyFile} from "@tauri-apps/plugin-fs";
     import type {BiliupConfig} from "./global";
     // Reads the `$APPDIR/users` directory recursively
     const entries = readDir('biliup/users', { dir: BaseDirectory.Config}).then(entries=> {
@@ -157,7 +157,7 @@
                 };
                 user = newVar;
                 people = [...people, newVar]
-                fetch(<string>ret['data']['face'], {method: "GET", responseType: ResponseType.Binary}).then((res)=>{
+                fetch(<string>ret['data']['face'], {method: "GET"}).then((res)=>{
                     newVar.face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
                     people = [...people]
                 })
@@ -168,7 +168,7 @@
     let people = [];
     async function processNewUser() {
         await invoke('logout');
-        await removeFile('biliup/cookies.json', { dir: BaseDirectory.Config });
+        await remove('biliup/cookies.json', { dir: BaseDirectory.Config });
         isLogin.set(false);
     }
     let user;
@@ -321,7 +321,8 @@
     </div>
 </div>
 
-<style>
+<!-- TODO: enable this -->
+<style lang="postcss">
     .selected {
         @apply text-gray-700 bg-gray-200;
     }

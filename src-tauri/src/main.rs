@@ -1,8 +1,7 @@
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use anyhow::Context;
 use biliup::client::StatelessClient;
 use biliup::uploader::credential::{Credential as BiliCredential};
@@ -13,9 +12,11 @@ use std::borrow::Cow;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use app::error;
-use app::error::Result;
-use app::{config_file, config_path, cookie_file, encode_hex, Credential};
+pub mod error;
+mod helper;
+
+use error::Result;
+use helper::{config_file, config_path, cookie_file, encode_hex, Credential};
 use futures::StreamExt;
 use tauri::async_runtime;
 use tauri::{Window, Manager};
@@ -26,7 +27,7 @@ use tracing_subscriber::{filter::LevelFilter, prelude::*, Layer, Registry};
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
-    async_runtime::block_on(app::login_by_password(username, password))?;
+    async_runtime::block_on(helper::login_by_password(username, password))?;
     if remember_me {
         match load() {
             Ok(mut config) => {
@@ -160,7 +161,7 @@ async fn upload(
             let len = chunk.len();
             uploaded += len;
             tx.send(uploaded).unwrap();
-            let progressbar = app::Progressbar::new(chunk, tx2.clone());
+            let progressbar = helper::Progressbar::new(chunk, tx2.clone());
             Ok((progressbar, len))
         })
     });
@@ -298,7 +299,7 @@ fn log(level: &str, msg: &str) -> Result<()> {
 
 fn main() {
     tauri::Builder::default()
-        .setup(|_app| {
+        .setup(|app| {
             let stdout_log = tracing_subscriber::fmt::layer()
                 .pretty()
                 .with_filter(LevelFilter::INFO);
@@ -311,7 +312,7 @@ fn main() {
             Registry::default().with(stdout_log).with(file_layer).init();
             #[cfg(debug_assertions)] // only include this code on debug builds
             {
-                let window = _app.get_window("main").unwrap();
+                let window = app.get_webview_window("main").unwrap();
                 window.open_devtools();
                 window.close_devtools();
             }
