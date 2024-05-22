@@ -17,6 +17,7 @@
     "http:default",
     "dialog:default",
     "dialog:allow-open",
+    "dialog:allow-confirm",
     {
       "identifier": "fs:default",
       "allow": [{"path": "$CONFIG/**"}, {"path": "$APPDATA/**"}]

@@ -51,7 +51,7 @@ export const fileselect = () => {
     });
 };
 
-export function attach(files: any[]) {
+export function attach(files: {name: string, path: string}[]) {
     console.log("attach(files)", files);
     currentTemplate.update(temp => {
         function findFile(file) {
@@ -67,8 +67,8 @@ export function attach(files: any[]) {
 
             // temp['files'] = [...temp['files'], ...event.target.files];
             temp.selectedTemplate['files'].push({
-                filename: file,
-                id: file,
+                filename: file.path,
+                id: file.name,
                 title: filename.substring(0, filename.lastIndexOf(".")),
                 desc: '',
                 progress: 0,
