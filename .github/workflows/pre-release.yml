@@ -45,14 +45,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: "latest"
-          releaseName: "App v__VERSION__"
+          releaseName: "latest"
           releaseBody: |-  
             See the assets to download this version and install.
             
             > Linux: .deb, .appimage
             > macOS: .app, .dmg
             > Windows: .exe, .msi
-          releaseDraft: true
+          releaseDraft: false
           prerelease: true
           includeDebug: true
           args: ${{ matrix.args }}
