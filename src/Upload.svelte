@@ -15,6 +15,8 @@
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
     import 'filepond/dist/filepond.css';
     import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
+    import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+
     import {fetch} from "@tauri-apps/plugin-http";
     import type {SelectedTemplate} from "./global";
 
