@@ -121,9 +121,11 @@
         console.log("openConfigDir", configDirectory);
         await open(configDirectory);
     }
-    let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
-    let line = 'auto';
-    let limit = 3;
+    let lines: string[] = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
+    $: console.log("lines", lines);
+    let line: string = 'auto';
+    $: console.log("line", line);
+    let limit: number = 3;
     let checkInputsBeforeSubmit: boolean = true;
 
     async function loadSettings() {
@@ -133,7 +135,8 @@
         } else {
             line = ret.line;
         }
-        limit = <number>ret['limit'];
+        limit = ret.limit;
+
         if (ret.checkInputsBeforeSubmit == undefined || ret.checkInputsBeforeSubmit == null) {
             checkInputsBeforeSubmit = true;
         } else {
@@ -255,9 +258,9 @@
                     <input type="range" max="128" min="1" bind:value={limit} class="range  range-xs">
                     <!--                    <button class="btn btn-outline">线路: AUTO</button>-->
                     <h4>上传线路选择：</h4>
-                    <div class="btn-group">
+                    <div class="join">
                         {#each lines as l}
-                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
+                            <input type="radio" bind:group={line} value={l} data-title={l} aria-label={l} class="join-item btn btn-outline">
                         {/each}
                     </div>
 <!--                    <h4>-->
