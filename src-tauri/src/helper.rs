@@ -24,21 +24,14 @@ pub struct Credential {
 }
 
 impl Credential {
-    pub async fn get_credential(&self, mut cookie_file_path: Option<PathBuf>) -> error::Result<Arc<BiliBili>> {
+    pub async fn get_current_user_credential(&self) -> error::Result<Arc<BiliBili>> {
         {
             let read_guard = self.credential.read().unwrap();
             if !read_guard.is_none() {
                 return Ok(read_guard.as_ref().unwrap().clone());
             }
         }
-        if cookie_file_path == None {
-            println!("use default cookie file as cookie_file_path");
-            cookie_file_path = Some(cookie_file()?);
-        }
-        else {
-            println!("use {:?} cookie file as cookie_file_path", cookie_file_path);
-        }
-        let login_info = login_by_cookies(cookie_file_path.unwrap()).await?;
+        let login_info = login_by_cookies(cookie_file()?).await?;
         let myinfo: serde_json::Value = login_info
             .client
             .get("https://api.bilibili.com/x/space/myinfo")

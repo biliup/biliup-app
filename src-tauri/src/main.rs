@@ -66,7 +66,7 @@ fn logout(credential: tauri::State<'_, Credential>) {
 
 #[tauri::command]
 async fn login_by_cookie(credential: tauri::State<'_, Credential>) -> Result<String> {
-    credential.get_credential(None).await?;
+    credential.get_current_user_credential().await?;
     Ok("登录成功".into())
 }
 
@@ -129,7 +129,7 @@ async fn upload(
     window: Window,
     credential: tauri::State<'_, Credential>,
 ) -> Result<Video> {
-    let bili = &*credential.get_credential(None).await?;
+    let bili = &*credential.get_current_user_credential().await?;
 
     let config = load()?;
     let probe = if let Some(line) = config.line {
@@ -202,20 +202,20 @@ async fn submit(
     studio: Studio,
     credential: tauri::State<'_, Credential>,
 ) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_credential(None).await?;
+    let login_info = &*credential.get_current_user_credential().await?;
     let ret = login_info.submit(&studio).await?;
     Ok(ret.data.unwrap())
 }
 
 #[tauri::command]
 async fn archive_pre(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_credential(None).await?;
+    let login_info = &*credential.get_current_user_credential().await?;
     Ok(login_info.archive_pre().await?)
 }
 
 #[tauri::command]
 async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_credential(None).await?;
+    let login_info = &*credential.get_current_user_credential().await?;
     Ok(login_info
         .client
         .get("https://api.bilibili.com/x/space/myinfo")
@@ -266,7 +266,7 @@ async fn cover_up(
     input: Cow<'_, [u8]>,
     credential: tauri::State<'_, Credential>,
 ) -> Result<String> {
-    let bili = &*credential.get_credential(None).await?;
+    let bili = &*credential.get_current_user_credential().await?;
     let url = bili.cover_up(&input).await?;
     Ok(url)
 }
@@ -278,7 +278,7 @@ fn is_vid(input: &str) -> bool {
 
 #[tauri::command]
 async fn show_video(input: &str, credential: tauri::State<'_, Credential>) -> Result<Studio> {
-    let login_info = &*credential.get_credential(None).await?;
+    let login_info = &*credential.get_current_user_credential().await?;
     let data = login_info
         .video_data(&biliup::uploader::bilibili::Vid::from_str(input)?)
         .await?;
@@ -302,7 +302,7 @@ async fn edit_video(
     studio: Studio,
     credential: tauri::State<'_, Credential>,
 ) -> Result<serde_json::Value> {
-    let ret = credential.get_credential(None).await?.edit(&studio).await?;
+    let ret = credential.get_current_user_credential().await?.edit(&studio).await?;
     Ok(ret)
 }
 
