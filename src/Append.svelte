@@ -1,11 +1,12 @@
-<script>
-    import {attach, fileselect} from './store.ts';
+<script lang="ts">
+    import {attach, fileselect} from './store';
     import {flip} from 'svelte/animate';
     import Progress from "./Progress.svelte";
     import DragAndDrop from './Drag-and-drop.svelte';
     import {dndzone} from "svelte-dnd-action";
+    import type {SelectedTemplate} from "./global";
 
-    export let selectedTemplate;
+    export let selectedTemplate: SelectedTemplate;
 
     const flipDurationMs = 300;
 

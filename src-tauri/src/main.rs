@@ -1,8 +1,7 @@
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use anyhow::Context;
 use biliup::client::StatelessClient;
 use biliup::uploader::credential::{Credential as BiliCredential};
@@ -12,10 +11,13 @@ use futures::future::abortable;
 use std::borrow::Cow;
 use std::path::PathBuf;
 use std::str::FromStr;
+use biliup::credential::login_by_cookies;
 
-use app::error;
-use app::error::Result;
-use app::{config_file, config_path, cookie_file, encode_hex, Credential};
+pub mod error;
+mod helper;
+
+use error::Result;
+use helper::{config_file, config_path, cookie_file, encode_hex, Credential};
 use futures::StreamExt;
 use tauri::async_runtime;
 use tauri::{Window, Manager};
@@ -26,7 +28,7 @@ use tracing_subscriber::{filter::LevelFilter, prelude::*, Layer, Registry};
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
-    async_runtime::block_on(app::login_by_password(username, password))?;
+    async_runtime::block_on(helper::login_by_password(username, password))?;
     if remember_me {
         match load() {
             Ok(mut config) => {
@@ -64,7 +66,7 @@ fn logout(credential: tauri::State<'_, Credential>) {
 
 #[tauri::command]
 async fn login_by_cookie(credential: tauri::State<'_, Credential>) -> Result<String> {
-    credential.get_credential().await?;
+    credential.get_credential(None).await?;
     Ok("登录成功".into())
 }
 
@@ -127,7 +129,7 @@ async fn upload(
     window: Window,
     credential: tauri::State<'_, Credential>,
 ) -> Result<Video> {
-    let bili = &*credential.get_credential().await?;
+    let bili = &*credential.get_credential(None).await?;
 
     let config = load()?;
     let probe = if let Some(line) = config.line {
@@ -160,7 +162,7 @@ async fn upload(
             let len = chunk.len();
             uploaded += len;
             tx.send(uploaded).unwrap();
-            let progressbar = app::Progressbar::new(chunk, tx2.clone());
+            let progressbar = helper::Progressbar::new(chunk, tx2.clone());
             Ok((progressbar, len))
         })
     });
@@ -200,21 +202,35 @@ async fn submit(
     studio: Studio,
     credential: tauri::State<'_, Credential>,
 ) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_credential().await?;
+    let login_info = &*credential.get_credential(None).await?;
     let ret = login_info.submit(&studio).await?;
     Ok(ret.data.unwrap())
 }
 
 #[tauri::command]
 async fn archive_pre(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_credential().await?;
+    let login_info = &*credential.get_credential(None).await?;
     Ok(login_info.archive_pre().await?)
 }
 
 #[tauri::command]
 async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    // let (_, client) = &*credential.get_credential().await?;
-    let login_info = &*credential.get_credential().await?;
+    let login_info = &*credential.get_credential(None).await?;
+    Ok(login_info
+        .client
+        .get("https://api.bilibili.com/x/space/myinfo")
+        .send()
+        .await?
+        .json()
+        .await?)
+}
+
+#[tauri::command]
+async fn get_others_myinfo(file_name: String) -> Result<serde_json::Value> {
+    println!("file_name {:?}", file_name);
+
+    let login_info = login_by_cookies(config_path()?.join(file_name)).await?;
+
     Ok(login_info
         .client
         .get("https://api.bilibili.com/x/space/myinfo")
@@ -250,7 +266,7 @@ async fn cover_up(
     input: Cow<'_, [u8]>,
     credential: tauri::State<'_, Credential>,
 ) -> Result<String> {
-    let bili = &*credential.get_credential().await?;
+    let bili = &*credential.get_credential(None).await?;
     let url = bili.cover_up(&input).await?;
     Ok(url)
 }
@@ -262,7 +278,7 @@ fn is_vid(input: &str) -> bool {
 
 #[tauri::command]
 async fn show_video(input: &str, credential: tauri::State<'_, Credential>) -> Result<Studio> {
-    let login_info = &*credential.get_credential().await?;
+    let login_info = &*credential.get_credential(None).await?;
     let data = login_info
         .video_data(&biliup::uploader::bilibili::Vid::from_str(input)?)
         .await?;
@@ -286,7 +302,7 @@ async fn edit_video(
     studio: Studio,
     credential: tauri::State<'_, Credential>,
 ) -> Result<serde_json::Value> {
-    let ret = credential.get_credential().await?.edit(&studio).await?;
+    let ret = credential.get_credential(None).await?.edit(&studio).await?;
     Ok(ret)
 }
 
@@ -298,7 +314,11 @@ fn log(level: &str, msg: &str) -> Result<()> {
 
 fn main() {
     tauri::Builder::default()
-        .setup(|_app| {
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
+        .setup(|app| {
             let stdout_log = tracing_subscriber::fmt::layer()
                 .pretty()
                 .with_filter(LevelFilter::INFO);
@@ -311,7 +331,7 @@ fn main() {
             Registry::default().with(stdout_log).with(file_layer).init();
             #[cfg(debug_assertions)] // only include this code on debug builds
             {
-                let window = _app.get_window("main").unwrap();
+                let window = app.get_webview_window("main").unwrap();
                 window.open_devtools();
                 window.close_devtools();
             }
@@ -331,6 +351,7 @@ fn main() {
             login_by_qrcode,
             get_qrcode,
             get_myinfo,
+            get_others_myinfo,
             cover_up,
             is_vid,
             show_video,

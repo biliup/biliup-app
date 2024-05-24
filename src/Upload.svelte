@@ -1,8 +1,9 @@
 <script lang="ts">
     import Append from './Append.svelte';
     import {currentTemplate, save_config, template} from './store';
-    import {invoke} from '@tauri-apps/api/tauri';
-    import {archivePre, contentLimitation, CopyrightType, createPop, partition} from "./common";
+    import {invoke} from "@tauri-apps/api/core";
+    import {archivePre, createPop, partition} from "./common";
+    import {contentLimitation, CopyrightType} from "./lib/constants";
     import FilePond, {registerPlugin} from 'svelte-filepond';
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
@@ -12,8 +13,11 @@
     import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
     import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+    import 'filepond/dist/filepond.css';
     import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
-    import {fetch, ResponseType} from "@tauri-apps/api/http";
+    import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+
+    import {fetch} from "@tauri-apps/plugin-http";
     import type {SelectedTemplate} from "./global";
 
     export let selected: string;
@@ -288,7 +292,7 @@
         selectedTemplate.cover = '';
         console.log('A file has been removed', fileItem);
     }
-    let server = {
+    let filepondServer = {
         process: (fieldName, file: File, metadata, load, error, progress, abort, transfer, options) => {
             progress(false, 0, 0);
 
@@ -318,18 +322,23 @@
         },
 
         load: (source, load, error, progress, abort, headers) => {
+            console.log("load: (source, load, error, progress, abort, headers)", source);
 
             progress(false, 0, 0);
 
             // Should call the load method with a file object or blob when done
-            fetch(source, {method: "GET", responseType: ResponseType.Binary}).then((res) => {
-                load(new Blob([new Uint8Array(<number[]>res.data)], {type: res.headers['content-type']}));
-            }).catch((e) => {
+            (async () => {
+                try {
+                    const res = await fetch(source, {method: "GET"});
+                    console.log("fetch(source, {method: 'GET'}) => res", res);
+                    load(await res.blob());
+                } catch (e) {
+                    error(e);
+                    createPop(e, 5000);
+                    console.log(e);
+                }
+            })();
 
-                error(e);
-                createPop(e, 5000);
-                console.log(e);
-            });
             // Should expose an abort method so the request can be cancelled
             return {
                 abort: () => {
@@ -523,7 +532,7 @@
             <div class="app">
                 <FilePond bind:this={pond} {name}
                           labelIdle="{labelIdle}"
-                          server="{server}"
+                          server="{filepondServer}"
                           files="{uploadedCover}"
                           credits="{false}"
                           onremovefile="{handleRemoveFile}"

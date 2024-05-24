@@ -14,7 +14,9 @@ use tokio::sync::mpsc::UnboundedSender;
 use std::sync::{Arc, RwLock};
 use biliup::uploader::bilibili::BiliBili;
 
-pub mod error;
+// pub mod error;
+// use crate::error;
+use crate::error;
 
 #[derive(Default)]
 pub struct Credential {
@@ -22,14 +24,21 @@ pub struct Credential {
 }
 
 impl Credential {
-    pub async fn get_credential(&self) -> error::Result<Arc<BiliBili>> {
+    pub async fn get_credential(&self, mut cookie_file_path: Option<PathBuf>) -> error::Result<Arc<BiliBili>> {
         {
             let read_guard = self.credential.read().unwrap();
             if !read_guard.is_none() {
                 return Ok(read_guard.as_ref().unwrap().clone());
             }
         }
-        let login_info = login_by_cookies(cookie_file()?).await?;
+        if cookie_file_path == None {
+            println!("use default cookie file as cookie_file_path");
+            cookie_file_path = Some(cookie_file()?);
+        }
+        else {
+            println!("use {:?} cookie file as cookie_file_path", cookie_file_path);
+        }
+        let login_info = login_by_cookies(cookie_file_path.unwrap()).await?;
         let myinfo: serde_json::Value = login_info
             .client
             .get("https://api.bilibili.com/x/space/myinfo")
@@ -58,7 +67,8 @@ pub fn cookie_file() -> error::Result<PathBuf> {
 }
 
 pub fn config_path() -> error::Result<PathBuf> {
-    let mut config_dir = tauri::api::path::config_dir()
+    // TODO: maybe use tauri's PathResolver
+    let mut config_dir: PathBuf = dirs_next::config_dir()
         .ok_or_else(|| error::Error::Err("config_dir".to_string()))?;
     config_dir.push("biliup");
     if !config_dir.exists() {
