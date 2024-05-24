@@ -26,7 +26,6 @@
     // let title: string = ;
 
     let noReprint = true;
-    let copyrightType: CopyrightType = CopyrightType.original;
 
     let edit = false;
 
@@ -42,7 +41,7 @@
         edit = e;
     }
 
-    async function del() {
+    async function deleteTemplate() {
         if (!(await confirm(`确定要移除模板 ${selected} 吗？`))) { // confirm() is returning a Promise
             return;
         }
@@ -72,14 +71,14 @@
         createPop('移除成功', 2000, 'Success');
     }
 
-    async function save() {
+    async function saveTemplates() {
         // console.log({[selected]: config});
         await save_config((ret) => {
             ret.streamers = $template;
         })
         selectedTemplate.changed = false;
         $template = $template;
-        createPop('保存成功', 5000, 'Success');
+        createPop('模板保存成功', 5000, 'Success');
     }
 
     // console.log()
@@ -134,8 +133,7 @@
             dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
 
-        selectedTemplate.copyright = copyrightType;
-        if (copyrightType == CopyrightType.original) {
+        if ($currentTemplate.selectedTemplate.copyright == CopyrightType.original) {
             noreprint = noReprint ? 1 : 0;
         }
         if (selectedTemplate.desc){
@@ -366,7 +364,6 @@
     $: {
         selectedTemplate; // for reactivity
         tags; // for reactivity
-        copyrightType; // for reactivity
         inputsAreValid = checkInputFields(false);
     }
     let inputsViolations: string[];
@@ -394,7 +391,7 @@
             canSubmit = false;
         }
 
-        if (copyrightType == CopyrightType.reprint && selectedTemplate.source.length > contentLimitation.reprintUrlLength){
+        if ($currentTemplate.selectedTemplate.copyright == CopyrightType.reprint && selectedTemplate.source.length > contentLimitation.reprintUrlLength){
             // if (createPopup) createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
             if (createPopup) {
                 createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
@@ -404,7 +401,7 @@
             canSubmit = false;
         }
 
-        if (copyrightType == CopyrightType.reprint && selectedTemplate.source.length === 0){
+        if ($currentTemplate.selectedTemplate.copyright == CopyrightType.reprint && selectedTemplate.source.length === 0){
             if (createPopup) {
                 createPop(`转载来源不能为空`, 5000);
             } else {
@@ -497,7 +494,7 @@
                     {/if}
                 </label>
                 <div class="flex flex-row-reverse">
-                    <button class="ml-2 py-2 px-2 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={del}
+                    <button class="ml-2 py-2 px-2 flex justify-center items-center bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={deleteTemplate}
                             type="button">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                              xmlns="http://www.w3.org/2000/svg">
@@ -505,7 +502,7 @@
                                   stroke-width="2"/>
                         </svg>
                     </button>
-                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={save}
+                    <button class="py-2 px-2 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  w-8 h-8 rounded-lg " on:click|preventDefault={saveTemplates}
                             type="button">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                              xmlns="http://www.w3.org/2000/svg">
@@ -544,18 +541,18 @@
                     <div class="form-control">
                         <label class="label cursor-pointer">
                             <span class="label-text font-bold">自制</span>
-                            <input type="radio" name="radio-10" class="radio checked" checked={copyrightType === CopyrightType.original} on:click={()=>{copyrightType = CopyrightType.original}} />
+                            <input type="radio" name="radio-10" class="radio checked" checked={$currentTemplate.selectedTemplate.copyright === CopyrightType.original} on:click={()=>{$currentTemplate.selectedTemplate.copyright = CopyrightType.original}} />
                         </label>
                     </div>
                     <div class="form-control">
                         <label class="label cursor-pointer">
                             <span class="label-text font-bold">转载</span>
-                            <input type="radio" name="radio-10" class="radio checked" checked={copyrightType === CopyrightType.reprint} on:click={()=>{copyrightType = CopyrightType.reprint}} />
+                            <input type="radio" name="radio-10" class="radio checked" checked={$currentTemplate.selectedTemplate.copyright === CopyrightType.reprint} on:click={()=>{$currentTemplate.selectedTemplate.copyright = CopyrightType.reprint}} />
                         </label>
                     </div>
                 </div>
 
-                {#if copyrightType === CopyrightType.original}
+                {#if $currentTemplate.selectedTemplate.copyright === CopyrightType.original}
                     <div class="form-control">
                         <label class="label cursor-pointer">
                             <span class="label-text">自制声明：未经作者授权 禁止转载</span>
