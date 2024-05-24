@@ -1,8 +1,8 @@
-name: "publish"
+name: "pre-release"
 on:
   push:
     branches:
-      - release
+      - "pre-release"
 
 jobs:
   publish-tauri:
@@ -44,15 +44,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "App v__VERSION__"
-          releaseBody: |-
+          tagName: "latest"
+          releaseName: "latest"
+          releaseBody: |-  
             See the assets to download this version and install.
             
             > Linux: .deb, .appimage
             > macOS: .app, .dmg
             > Windows: .exe, .msi
-          releaseDraft: true
-          prerelease: false
+          releaseDraft: false
+          prerelease: true
           includeDebug: true
           args: ${{ matrix.args }}

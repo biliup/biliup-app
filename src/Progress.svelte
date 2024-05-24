@@ -1,9 +1,12 @@
-<script>
+<script lang="ts">
     import {tweened} from "svelte/motion";
     import {emit} from "@tauri-apps/api/event";
     import {getCurrent} from "@tauri-apps/api/window";
 
-    export let selectedTemplate;
+    import {contentLimitation} from "./lib/constants";
+    import type {SelectedTemplate} from "./global";
+
+    export let selectedTemplate: SelectedTemplate;
     export let file;
     let complete = file.complete;
     let progress = 0;
@@ -41,6 +44,13 @@
         return hexCharCode.join("");
     }
     async function remove() {
+        let index = selectedTemplate.files.findIndex(value => value.id === id);
+
+        // TODO: change confirmation prompt to modal
+        if (!(await confirm(`确定要移除 ${selectedTemplate.files[index].title} 吗？`))) { // confirm() is returning a Promise
+            return;
+        }
+
         await emit(strToHexCharCode(id));
         selectedTemplate.files = selectedTemplate.files.filter(value => value.id !== id);
     }
@@ -70,7 +80,11 @@
         <div class="flex">
             <span class="w-full">
                 <div class="flex w-full justify-between">
-                    <input bind:value="{file.title}" class="bg-inherit w-full truncate"/>
+                    {#if file.title.length <= contentLimitation.videoPartTitleLength}
+                        <input bind:value="{file.title}" class="bg-inherit w-full truncate"/>
+                    {:else}
+                        <input bind:value="{file.title}" class="bg-inherit w-full truncate bg-red-100 border border-red-300"/>
+                    {/if}
                     <!--{title}-->
                     <div class="text-gray-500 min-w-fit text-sm">{(totalSize/1024/1024).toFixed(2)} MiB</div>
                 </div>

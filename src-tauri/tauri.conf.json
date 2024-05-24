@@ -1,73 +1,33 @@
 {
-  "package": {
-    "productName": "biliup-app",
-    "version": "0.4.1"
-  },
+  "productName": "biliup-app",
+  "version": "0.0.0",
+  "identifier": "com.biliup.app",
   "build": {
-    "distDir": "../public",
-    "devPath": "http://localhost:5000",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
   },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.tauri.pro",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [],
-      "externalBin": [],
-      "copyright": "",
-      "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
-      "deb": {
-        "depends": []
-      },
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "10.13",
-        "exceptionDomain": "",
-        "signingIdentity": null,
-        "entitlements": null
-      },
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "updater": {
-      "active": false
-    },
-    "allowlist": {
-      "all": true,
-      "http": {
-        "all": true,
-        "scope": ["http://**", "https://archive.biliimg.com/*","https://i2.hdslb.com/*"]
-      },
-      "fs": {
-          "scope": ["$CONFIG/*"]
-      }
-    },
-    "windows": [
+  "app": {"windows": [
       {
-        "title": "biliup",
-        "width": 930,
-        "height": 600,
-        "resizable": true,
-        "fullscreen": false,
-        "fileDropEnabled": true
+        "title": "biliup-app",
+        "width": 800,
+        "height": 600
       }
     ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+      "csp": null
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   }
 }

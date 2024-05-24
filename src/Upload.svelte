@@ -1,10 +1,11 @@
 <script lang="ts">
     import Append from './Append.svelte';
-    import {receive,currentTemplate, save_config, template} from './store';
-    import {invoke} from '@tauri-apps/api/tauri';
+    import {currentTemplate, save_config, template} from './store';
+    import {invoke} from "@tauri-apps/api/core";
     import {archivePre, createPop, partition} from "./common";
-    import FilePond, { registerPlugin, supported } from 'svelte-filepond';
-    import { fade, fly } from 'svelte/transition';
+    import {contentLimitation, CopyrightType} from "./lib/constants";
+    import FilePond, {registerPlugin} from 'svelte-filepond';
+    import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
     // Import the Image EXIF Orientation and Image Preview plugins
     // Note: These need to be installed separately
@@ -12,17 +13,20 @@
     import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
     import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
     import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+    import 'filepond/dist/filepond.css';
+    import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
+    import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 
-    export let selected;
-    export let selectedTemplate;
+    import {fetch} from "@tauri-apps/plugin-http";
+    import type {SelectedTemplate} from "./global";
+
+    export let selected: string;
+    export let selectedTemplate: SelectedTemplate;
     let oldSelected = selected;
     // let title: string = ;
-    let nocopyright: boolean;
-    $ : nocopyright = selectedTemplate?.copyright === 2;
+
     let noReprint = true;
-    function handleClick(e) {
-        selectedTemplate.copyright = e.target.checked ? 2 : 1;
-    }
+    let copyrightType: CopyrightType = CopyrightType.original;
 
     let edit = false;
 
@@ -39,6 +43,10 @@
     }
 
     async function del() {
+        if (!(await confirm(`确定要移除模板 ${selected} 吗？`))) { // confirm() is returning a Promise
+            return;
+        }
+
         let len = Object.keys($template).length;
         const keys = Object.keys($template);
         const index = keys.indexOf(selected);
@@ -110,21 +118,30 @@
         }
     }
 
-    let tempTag;
+    let tagInput: string;
     let autoSubmit = false;
     $: autoSubmit = !!selectedTemplate?.submitCallback;
     function submitCallback() {
-        selectedTemplate.videos = selectedTemplate?.files;
+        // if (!checkInputFields(true)) {
+        //     createPop("部分内容长度不符合要求，无法提交", 5000);
+        //     return;
+        // }
+
+        selectedTemplate.videos = selectedTemplate.files;
         let dtime = null;
         let noreprint = null;
         if (isDtime) {
             dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
-        if (!nocopyright) {
+
+        selectedTemplate.copyright = copyrightType;
+        if (copyrightType == CopyrightType.original) {
             noreprint = noReprint ? 1 : 0;
         }
-
-        let tag = tags.join(',');
+        if (selectedTemplate.desc){
+            // <input maxlength={} /> will only limits new inputs, if limitation changes, the existing value will not be automatically truncated
+            selectedTemplate.desc = selectedTemplate.desc.substring(0, contentLimitation.descriptionLengthByZone(selectedTemplate.tid));
+        }
 
         let invokeMethod;
         let msg;
@@ -140,15 +157,27 @@
         invoke(invokeMethod, {
                 studio: {
                     ...selectedTemplate,
-                    tag: tag,
+                    tag: tags.join(','),
                     dtime: dtime,
                     no_reprint: noreprint,
                     ...hires_params,
                 }
         })
-        .then((res: any) => {
-            console.log(res);
-            createPop(`${selected} - ${msg}成功: ${res.bvid}`, 5000, 'Success');
+        .then((res) => {
+            console.log("res", res);
+            if (typeof res == "object" && "bvid" in res) {
+                createPop(`${selected} - ${msg}成功: ${res.bvid}`, 5000, 'Success');
+            }
+            else if (typeof res == "object" && "data" in res
+                && typeof res.data == "object" && "bvid" in res.data
+            ) {
+                createPop(`${selected} - ${msg}成功: ${res.data.bvid}`, 5000, 'Success');
+            }
+            else {
+                createPop(`${selected} - ${msg}成功：${res}`, 5000, 'Success');
+            }
+
+            lastSubmissionTime = new Date();
         }).catch((e) => {
                 createPop(e, 5000);
                 console.log(e);
@@ -168,20 +197,30 @@
         autoSubmit = false;
     }
 
-    function handleKeypress() {
-        if (tags.includes(tempTag)) {
-            createPop("已有相同标签");
-            tempTag = null;
+    function handleTagEnter() {
+        if (!tagInput) {  // otherwise the new tag content is "undefined" or "null"
             return;
         }
-        if(tags.length > 12) {
-            createPop("标签数量超过12个，无法添加");
-            tempTag = null;
+
+        if (tagInput.length > contentLimitation.individualTagLength) {
+            createPop(`标签长度超过${contentLimitation.individualTagLength}个字符，无法添加`, 5000);
             return;
         }
-        tags = [...tags, tempTag];
+
+        if (tags.includes(tagInput)) {
+            createPop("已有相同标签", 5000);
+            tagInput = "";
+            return;
+        }
+        if (tags.length > contentLimitation.tagsCount) {
+            createPop(`标签数量超过${contentLimitation.tagsCount}个，无法添加`, 5000);
+            tagInput = "";
+            return;
+        }
+
+        tags = [...tags, tagInput];
         selectedTemplate.tag = tags.join(',');
-        tempTag = null;
+        tagInput = "";
         return false;
     }
 
@@ -229,8 +268,6 @@
         hiResFieldDisabled = true;
     }
 
-    import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
-    import {fetch, ResponseType} from "@tauri-apps/api/http";
     // Register the plugins
     registerPlugin(
         FilePondPluginFileValidateType,
@@ -255,7 +292,7 @@
         selectedTemplate.cover = '';
         console.log('A file has been removed', fileItem);
     }
-    let server = {
+    let filepondServer = {
         process: (fieldName, file: File, metadata, load, error, progress, abort, transfer, options) => {
             progress(false, 0, 0);
 
@@ -285,18 +322,23 @@
         },
 
         load: (source, load, error, progress, abort, headers) => {
+            console.log("load: (source, load, error, progress, abort, headers)", source);
 
             progress(false, 0, 0);
 
             // Should call the load method with a file object or blob when done
-            fetch(source, {method: "GET", responseType: ResponseType.Binary}).then((res) => {
-                load(new Blob([new Uint8Array(<number[]>res.data)], {type: res.headers['content-type']}));
-            }).catch((e) => {
+            (async () => {
+                try {
+                    const res = await fetch(source, {method: "GET"});
+                    console.log("fetch(source, {method: 'GET'}) => res", res);
+                    load(await res.blob());
+                } catch (e) {
+                    error(e);
+                    createPop(e, 5000);
+                    console.log(e);
+                }
+            })();
 
-                error(e);
-                createPop(e, 5000);
-                console.log(e);
-            });
             // Should expose an abort method so the request can be cancelled
             return {
                 abort: () => {
@@ -317,6 +359,120 @@
             type: 'local',
         },
     }] : null;
+
+    let lastSubmissionTime: Date;
+
+    let inputsAreValid: boolean;
+    $: {
+        selectedTemplate; // for reactivity
+        tags; // for reactivity
+        copyrightType; // for reactivity
+        inputsAreValid = checkInputFields(false);
+    }
+    let inputsViolations: string[];
+
+    function checkInputFields(createPopup: boolean): boolean {
+        let canSubmit = true;
+        let currentInputViolations = [];
+
+        if (selectedTemplate.title.length > contentLimitation.titleLength) {
+            if (createPopup){
+                createPop(`标题长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${selectedTemplate.title.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`标题长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${selectedTemplate.title.length}个字符`);
+            }
+            canSubmit = false;
+        }
+
+        if (selectedTemplate.title.length === 0) {
+            // if (createPopup) createPop(`标题不能为空`, 5000);
+            if (createPopup) {
+                createPop(`标题不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`标题不能为空`);
+            }
+            canSubmit = false;
+        }
+
+        if (copyrightType == CopyrightType.reprint && selectedTemplate.source.length > contentLimitation.reprintUrlLength){
+            // if (createPopup) createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
+            if (createPopup) {
+                createPop(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`转载来源长度超过${contentLimitation.reprintUrlLength}个字符，无法提交，当前为${selectedTemplate.source.length}个字符`);
+            }
+            canSubmit = false;
+        }
+
+        if (copyrightType == CopyrightType.reprint && selectedTemplate.source.length === 0){
+            if (createPopup) {
+                createPop(`转载来源不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`转载来源不能为空`);
+            }
+            canSubmit = false;
+        }
+
+        if (tags.length > contentLimitation.tagsCount) {
+            // if (createPopup) createPop(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`, 5000);
+            if (createPopup) {
+                createPop(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`, 5000);
+            } else {
+                currentInputViolations.push(`标签数量超过${contentLimitation.tagsCount}个，无法提交，当前为${tags.length}个`);
+            }
+            canSubmit = false;
+        }
+
+        if (tags.length === 0) {
+            if (createPopup) {
+                createPop(`标签不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`标签不能为空`);
+            }
+            canSubmit = false;
+        }
+
+        if (selectedTemplate.desc.length > contentLimitation.descriptionLengthByZone(selectedTemplate.tid)) {
+            if (createPopup) {
+                createPop(`简介长度超过${contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}个字符，无法提交，当前为${selectedTemplate.desc.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`简介长度超过${contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}个字符，无法提交，当前为${selectedTemplate.desc.length}个字符`);
+            }
+            canSubmit = false;
+        }
+
+        if (selectedTemplate.dynamic.length > contentLimitation.dynamicMessageLength) {
+            if (createPopup) {
+                createPop(`粉丝动态长度超过${contentLimitation.dynamicMessageLength}个字符，无法提交，当前为${selectedTemplate.dynamic.length}个字符`, 5000);
+            } else {
+                currentInputViolations.push(`粉丝动态长度超过${contentLimitation.dynamicMessageLength}个字符，无法提交，当前为${selectedTemplate.dynamic.length}个字符`);
+            }
+            canSubmit = false;
+        }
+
+        if (selectedTemplate.files.length === 0) {
+            if (createPopup) {
+                createPop(`新增稿件分P不能为空`, 5000);
+            } else {
+                currentInputViolations.push(`新增稿件分P不能为空`);
+            }
+            canSubmit = false;
+        }
+
+        selectedTemplate.files.forEach((file, index) => {
+            if (file.title.length > contentLimitation.titleLength) {
+                if (createPopup) {
+                    createPop(`P${index+1} ${file.title} 名称长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${file.title.length}个字符`, 5000);
+                } else {
+                    currentInputViolations.push(`P${index+1} ${file.title} 名称长度超过${contentLimitation.titleLength}个字符，无法提交，当前为${file.title.length}个字符`);
+                }
+                canSubmit = false;
+            }
+        });
+
+        inputsViolations = currentInputViolations;
+        return canSubmit;
+    }
 </script>
 <div in:fly="{{ y: 200, duration: 400 }}">
     <div class="px-6 pt-3 pb-10 my-2 mr-12" >
@@ -359,17 +515,24 @@
                     </button>
                 </div>
             </div>
-            <input bind:value={selectedTemplate.title}
-                   class="bg-[#f9fcfd] w-full text-base p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                   placeholder="标题">
-            <Append selectedTemplate="{selectedTemplate}"/>
+            {#if selectedTemplate.title.length <= contentLimitation.titleLength}
+                <input bind:value={selectedTemplate.title}
+                       class="bg-[#f9fcfd] w-full text-base p-2 rounded-lg focus:outline-none focus:border-indigo-500 border border-gray-300"
+                       placeholder="标题，长度限制{contentLimitation.titleLength}个字符" />
+            {:else}
+                <input bind:value={selectedTemplate.title}
+                       class="w-full text-base p-2 rounded-lg focus:outline-none focus:border-indigo-500 bg-red-100 border border-red-300"
+                       placeholder="标题，长度限制{contentLimitation.titleLength}个字符" />
+            {/if}
+
+            <Append bind:selectedTemplate={selectedTemplate}/>
             <p class="text-sm text-gray-300">
                 File type: .mp4,.flv,.avi,.wmv,.mov,.webm,.mpeg4,.ts,.mpg,.rm,.rmvb,.mkv,.m4v
             </p>
             <div class="app">
                 <FilePond bind:this={pond} {name}
                           labelIdle="{labelIdle}"
-                          server="{server}"
+                          server="{filepondServer}"
                           files="{uploadedCover}"
                           credits="{false}"
                           onremovefile="{handleRemoveFile}"
@@ -377,31 +540,34 @@
                           />
             </div>
             <div class="bg-[#fafcfd] border rounded-md px-2 py-1">
-                <div class="mb-3 flex justify-between items-center">
-                    <!--                <div>-->
-                    <!--                    <div class="relative inline-block w-10 mr-2 align-middle select-none">-->
-                    <!--                        bind:checked={nocopyright}-->
-                    <input checked={nocopyright} class="toggle" id="Orange"
-                           name="toggle" on:change={(event) => handleClick(event)}
-                           type="checkbox"/>
-                    <!--                        <label class="block overflow-hidden h-6 rounded-full bg-gray-100 cursor-pointer" for="Orange">-->
-                    <!--                        </label>-->
-                    <!--                    </div>-->
-                    <span class="mx-2 w-auto text-sm tracking-wide">
-                            是否转载
-                    </span>
-                    <!--                </div>-->
-                    <div class="pl-4 invisible flex-grow" class:copyright={nocopyright}>
-                        <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text"/>
+                <div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-bold">自制</span>
+                            <input type="radio" name="radio-10" class="radio checked" checked={copyrightType === CopyrightType.original} on:click={()=>{copyrightType = CopyrightType.original}} />
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text font-bold">转载</span>
+                            <input type="radio" name="radio-10" class="radio checked" checked={copyrightType === CopyrightType.reprint} on:click={()=>{copyrightType = CopyrightType.reprint}} />
+                        </label>
                     </div>
                 </div>
-                {#if !nocopyright}
+
+                {#if copyrightType === CopyrightType.original}
                     <div class="form-control">
                         <label class="label cursor-pointer">
                             <span class="label-text">自制声明：未经作者授权 禁止转载</span>
                             <input type="checkbox" bind:checked="{noReprint}" class="checkbox">
                         </label>
                     </div>
+                {:else}
+                    {#if selectedTemplate.source.length <= contentLimitation.reprintUrlLength}
+                        <input bind:value={selectedTemplate.source} class="input w-full" placeholder="转载来源" type="text"/>
+                    {:else}
+                        <input bind:value={selectedTemplate.source} class="input w-full bg-red-100 border border-red-300" placeholder="转载来源" type="text"/>
+                    {/if}
                 {/if}
             </div>
 
@@ -440,25 +606,50 @@
                     </span>
                 {/each}
 
-                <input bind:value={tempTag} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleKeypress()}
+                <input bind:value={tagInput} class="outline-none rounded-lg flex-1 appearance-none  w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base " on:keypress={e=>e.key==='Enter' && handleTagEnter()}
                        placeholder="标签，回车输入"
-                       type="text"/>
+                       type="text"
+                />
             </div>
             <div class="text-gray-700">
-                <label class="label">
-                    <span class="text-sm font-bold text-gray-500 tracking-wide">简介</span>
-                </label>
-                <textarea bind:value={selectedTemplate.desc}
-                          class="textarea textarea-bordered w-full"
-                          cols="40" placeholder="简介补充: ..." rows="4"></textarea>
+                <!-- Svelte: A11y: A form label must be associated with a control. -->
+                <div class="label">
+                    <span class="text-sm font-bold text-gray-500 tracking-wide">
+                        简介
+                        <sub>{selectedTemplate.desc.length}/{contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}</sub>
+                    </span>
+                </div>
+                {#if selectedTemplate.desc.length <= contentLimitation.descriptionLengthByZone(selectedTemplate.tid)}
+                    <textarea bind:value={selectedTemplate.desc}
+                              class="textarea textarea-bordered w-full"
+                              cols="40" rows="4" placeholder="简介补充: ..."
+                    ></textarea>
+                {:else}
+                    <textarea bind:value={selectedTemplate.desc}
+                              class="textarea textarea-bordered w-full bg-red-100 border border-red-300"
+                              cols="40" rows="4" placeholder="简介补充: ..."
+                    ></textarea>
+                {/if}
             </div>
             <div class="text-gray-700">
-                <label class="label">
-                    <span class="text-sm font-bold text-gray-500 tracking-wide">粉丝动态</span>
-                </label>
-                <textarea bind:value={selectedTemplate.dynamic}
-                          class="textarea textarea-bordered w-full"
-                          cols="40" placeholder="动态描述" rows="1"></textarea>
+                <!-- Svelte: A11y: A form label must be associated with a control. -->
+                <div class="label">
+                    <span class="text-sm font-bold text-gray-500 tracking-wide">
+                        粉丝动态
+                        <sub>{selectedTemplate.dynamic.length}/{contentLimitation.dynamicMessageLength}</sub>
+                    </span>
+                </div>
+                {#if selectedTemplate.dynamic.length <= contentLimitation.dynamicMessageLength}
+                    <textarea bind:value={selectedTemplate.dynamic}
+                              class="textarea textarea-bordered w-full"
+                              cols="40" rows="1" placeholder="动态描述"
+                    ></textarea>
+                {:else}
+                    <textarea bind:value={selectedTemplate.dynamic}
+                              class="textarea textarea-bordered w-full bg-red-100 border border-red-300"
+                              cols="40" rows="1" placeholder="动态描述"
+                    ></textarea>
+                {/if}
             </div>
             <div class="flex items-center">
                 <input type="checkbox" class="toggle my-2" bind:checked="{isDtime}">
@@ -483,6 +674,8 @@
                         </svg>
                         等待视频上传完后会自动提交...
                     </button>
+
+                    <!-- svelte-ignore a11y-missing-attribute -->
                     <a class="cursor-pointer" on:click={cancelSubmit}>
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-red-400 hover:stroke-rose-500 transition ease-in-out duration-150 ml-2.5 h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -490,17 +683,22 @@
                     </a>
                 </div>
             {:else}
+                {#if !inputsAreValid}
+                    <h3 class="text-center text-xl font-extrabold text-red-500 decoration-8">部分内容长度不符合要求，请谨慎提交</h3>
+                    {#each inputsViolations as violation}
+                        <p class="text-center text-red-500">{violation}</p>
+                    {/each}
+                {/if}
                 <button class="p-2 my-5 w-full flex justify-center bg-blue-500 text-gray-100 rounded-full tracking-wide
                           font-semibold  focus:outline-none focus:shadow-outline hover:bg-blue-600 shadow-lg cursor-pointer transition ease-in duration-300" on:click|preventDefault={submit} type="submit">
                     提交视频
                 </button>
             {/if}
+            {#if lastSubmissionTime}
+                <div class="text-sm text-gray-500 text-center">
+                    <p>上次提交时间: {lastSubmissionTime?.toLocaleString()}</p>
+                </div>
+            {/if}
         </div>
     </div>
 </div>
-
-<style>
-    .copyright {
-        @apply visible;
-    }
-</style>
