@@ -1,8 +1,8 @@
 name: "publish"
 on:
-  push:
-    branches:
-      - release
+  release:
+    types:
+      - created
 
 jobs:
   publish-tauri:
@@ -54,5 +54,5 @@ jobs:
             > Windows: .exe, .msi
           releaseDraft: true
           prerelease: false
-          includeDebug: true
+          includeDebug: false
           args: ${{ matrix.args }}
