@@ -14,9 +14,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use std::sync::{Arc, RwLock};
 use biliup::uploader::bilibili::BiliBili;
 
-// pub mod error;
-// use crate::error;
-use crate::error;
+pub mod error;
 
 #[derive(Default)]
 pub struct Credential {

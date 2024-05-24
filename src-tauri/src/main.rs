@@ -13,11 +13,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use biliup::credential::login_by_cookies;
 
-pub mod error;
-mod helper;
-
-use error::Result;
-use helper::{config_file, config_path, cookie_file, encode_hex, Credential};
+use biliup_app::error::{Error, Result};
+use biliup_app::{config_file, config_path, cookie_file, encode_hex, Credential, Progressbar, login_by_password};
 use futures::StreamExt;
 use tauri::async_runtime;
 use tauri::{Window, Manager};
@@ -28,7 +25,7 @@ use tracing_subscriber::{filter::LevelFilter, prelude::*, Layer, Registry};
 
 #[tauri::command]
 fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
-    async_runtime::block_on(helper::login_by_password(username, password))?;
+    async_runtime::block_on(login_by_password(username, password))?;
     if remember_me {
         match load() {
             Ok(mut config) => {
@@ -162,7 +159,7 @@ async fn upload(
             let len = chunk.len();
             uploaded += len;
             tx.send(uploaded).unwrap();
-            let progressbar = helper::Progressbar::new(chunk, tx2.clone());
+            let progressbar = Progressbar::new(chunk, tx2.clone());
             Ok((progressbar, len))
         })
     });
@@ -244,7 +241,7 @@ async fn get_others_myinfo(file_name: String) -> Result<serde_json::Value> {
 fn load_account() -> Result<User> {
     load()?
         .user
-        .ok_or_else(|| error::Error::Err("账号信息不存在".into()))
+        .ok_or_else(|| Error::Err("账号信息不存在".into()))
 }
 
 #[tauri::command]
