@@ -1,36 +1,32 @@
 [package]
-name = "app"
-version = "0.1.3"
+name = "biliup-app"
+version = "0.5.0"
 description = "A Tauri App"
 authors = ["you"]
-license = ""
-repository = ""
-default-run = "app"
 edition = "2021"
-build = "src/build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.2.0", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2.0", features = ["api-all"] }
-reqwest = { version = "0.11", features = ["json",] }
-tokio = { version = "1", features = ["full"] }
-tracing = "0.1"
-tracing-subscriber = "0.3"
-tracing-appender = "0.2"
-anyhow = "1.0"
-thiserror = "1.0"
-serde_yaml = "0.8"
-biliup = { version = "0.1.11" }
-futures = "0.3.17"
-bytes = "1.1.0"
-
-
-[features]
-default = [ "custom-protocol" ]
-custom-protocol = [ "tauri/custom-protocol" ]
+tauri = { version = "2.0.0-beta", features = [] }
+tauri-plugin-shell = "2.0.0-beta"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures = "0.3.30"
+thiserror = "1.0.61"
+reqwest = { version = "0.12.4", features = ["json"] }
+serde_yaml = "0.9.34+deprecated"
+tokio = { version = "1.37.0", features = ["full"] }
+anyhow = "1.0.86"
+biliup = { git = "https://github.com/ForgQi/biliup-rs.git", rev = "20b2b8c" }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+bytes = "1.6.0"
+dirs-next = "2.0.0"
+tracing-appender = "0.2.3"
+tauri-plugin-fs = "2.0.0-beta.7"
+tauri-plugin-http = "2.0.0-beta.7"
+tauri-plugin-dialog = "2.0.0-beta.7"

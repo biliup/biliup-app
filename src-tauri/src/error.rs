@@ -1,4 +1,4 @@
-use biliup::error::CustomError;
+use biliup::error::Kind;
 use futures::future::Aborted;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -10,7 +10,7 @@ pub enum Error {
     #[error("{0}")]
     Err(String),
     #[error(transparent)]
-    Error(#[from] CustomError),
+    Error(#[from] Kind),
     #[error(transparent)]
     Aborted(#[from] Aborted),
     #[error(transparent)]
@@ -31,8 +31,8 @@ pub enum Error {
 
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         serializer.serialize_str(&format!("{:?}", self))
     }

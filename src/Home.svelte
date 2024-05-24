@@ -2,8 +2,8 @@
     import Sidebar from './Sidebar.svelte';
     import Upload from './Upload.svelte';
     import {attach, progress,speed, template, currentTemplate} from "./store";
-    import {listen} from "@tauri-apps/api/event";
-    import {invoke} from "@tauri-apps/api/tauri";
+    import {listen, TauriEvent} from "@tauri-apps/api/event";
+    import {invoke} from "@tauri-apps/api/core";
     import {createPop} from "./common";
     import {setContext} from "svelte";
     import {writable} from "svelte/store";
@@ -48,19 +48,37 @@
     setContext("hover", fileHover);
     progress();
     speed();
-    listen("tauri://file-drop", (date) => {
-        console.log("1", date);
-        attach(date.payload);
+    listen(TauriEvent.DROP, (date: {payload: {paths: string[]}}) => {
+        console.log(TauriEvent.DROP, date);
+        let f: {name: string, path: string}[] = [];
+        date.payload.paths.forEach((value) => {
+            let currentFilename: string | undefined;
+            if (value.includes("\\")) {
+                currentFilename = value.split("\\").pop();
+            } else {
+                currentFilename = value.split("/").pop();
+            }
+            if (!currentFilename) {
+                console.error(`unable to extract filename from ${value}`);
+                return;
+            }
+
+            f.push({
+                name: currentFilename,
+                path: value
+            });
+        });
+        attach(f);
         $fileHover = false;
         // setContext("hover", fileHover);
     });
-    listen("tauri://file-drop-hover", (date) => {
-        console.log("2", date);
+    listen(TauriEvent.DRAG, (date) => {
+        console.log(TauriEvent.DRAG, date);
         $fileHover = true;
         // setContext("hover", fileHover);
     });
-    listen("tauri://file-drop-cancelled", (date) => {
-        console.log("3", date);
+    listen(TauriEvent.DROP_CANCELLED, (date) => {
+        console.log(TauriEvent.DROP_CANCELLED, date);
         $fileHover = false;
         // setContext("hover", fileHover);
     });

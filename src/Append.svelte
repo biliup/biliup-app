@@ -1,11 +1,12 @@
-<script>
-    import {attach, fileselect} from './store.ts';
+<script lang="ts">
+    import {attach, fileselect} from './store';
     import {flip} from 'svelte/animate';
     import Progress from "./Progress.svelte";
     import DragAndDrop from './Drag-and-drop.svelte';
     import {dndzone} from "svelte-dnd-action";
+    import type {SelectedTemplate} from "./global";
 
-    export let selectedTemplate;
+    export let selectedTemplate: SelectedTemplate;
 
     const flipDurationMs = 300;
 
@@ -86,7 +87,7 @@
              on:finalize="{handleDndFinalize}" class="bg-[#fafcfd] flex flex-col rounded-lg">
             {#each selectedTemplate.files as file(file.id)}
                 <div class="shadow-sm rounded-lg" animate:flip="{{duration: flipDurationMs}}">
-                    <Progress file="{file}" bind:selectedTemplate="{selectedTemplate}"/>
+                    <Progress bind:file={file} bind:selectedTemplate={selectedTemplate}/>
                     <!--{file.title}-->
                 </div>
             {/each}

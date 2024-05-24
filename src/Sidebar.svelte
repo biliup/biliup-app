@@ -1,21 +1,23 @@
 <script lang="ts">
-    import {currentTemplate, template, save_config, isLogin} from "./store.ts";
+    import {currentTemplate, template, save_config, isLogin, load_config} from "./store";
     import {fly} from 'svelte/transition';
     import {flip} from 'svelte/animate';
-    import {invoke} from "@tauri-apps/api/tauri";
-    import {fetch, ResponseType} from "@tauri-apps/api/http";
-    import {open} from "@tauri-apps/api/shell";
+    import {invoke} from "@tauri-apps/api/core";
+    import {fetch} from "@tauri-apps/plugin-http";
+    import {open} from "@tauri-apps/plugin-shell";
     import {configDir} from "@tauri-apps/api/path";
     import Modal from "./Modal.svelte";
     import {createPop} from "./common";
+    import {readDir, BaseDirectory, remove, copyFile} from "@tauri-apps/plugin-fs";
+    import type {BiliupConfig} from "./global";
+    import {INVOKE_COMMANDS} from "./lib/constants";
 
     let face = 'noface.jpg';
     let name = null;
-    invoke('get_myinfo', {fileName: "cookies.json"}).then((ret) => {
-        console.log(ret);
-        fetch(<string>ret['data']['face'], {method: "GET", responseType: ResponseType.Binary}).then((res)=>{
-            face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
-        })
+    invoke('get_myinfo', {fileName: "cookies.json"}).then(async (ret) => {
+        console.log("get_myinfo", ret);
+        let resp = await fetch(<string>ret['data']['face'], {method: "GET"});
+        face = 'data:image/jpeg;base64,' + arrayBufferToBase64(await resp.arrayBuffer());
         name = ret['data']['name'];
     });
 
@@ -105,22 +107,41 @@
         $currentTemplate.current = item;
     }
 
-    async function openConfigDir(){
-        await open(await configDir()+'biliup');
+    async function getConfigDir(): Promise<string>{
+        let configDirectory = await configDir();
+        if (!configDirectory.endsWith('/')) {
+            configDirectory += '/';
+        }
+        return configDirectory;
     }
-    let lines = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
-    let line = 'auto';
-    let limit = 3;
+
+    async function openConfigDir(){
+        let configDirectory = await getConfigDir();
+        configDirectory += "biliup";
+        console.log("openConfigDir", configDirectory);
+        await open(configDirectory);
+    }
+    let lines: string[] = ['ws', 'qn', 'auto', 'bda2', 'kodo', 'cos', 'cos-internal'];
+    $: console.log("lines", lines);
+    let line: string = 'auto';
+    $: console.log("line", line);
+    let limit: number = 3;
+    let checkInputsBeforeSubmit: boolean = true;
 
     async function loadSettings() {
-        let ret = await invoke('load');
-        console.log(ret);
+        let ret = await load_config();
         if (ret.line === null) {
             line = 'auto';
         } else {
             line = ret.line;
         }
-        limit = <number>ret['limit'];
+        limit = ret.limit;
+
+        if (ret.checkInputsBeforeSubmit == undefined || ret.checkInputsBeforeSubmit == null) {
+            checkInputsBeforeSubmit = true;
+        } else {
+            checkInputsBeforeSubmit = ret.checkInputsBeforeSubmit;
+        }
     }
 
     async function saveSettings() {
@@ -131,48 +152,55 @@
                 ret.line = line;
             }
             ret.limit = limit;
+            ret.checkInputsBeforeSubmit = checkInputsBeforeSubmit;
         })
     }
 
     let tempName: string;
 
-    import {readDir, BaseDirectory, removeFile, renameFile, copyFile} from '@tauri-apps/api/fs';
     // Reads the `$APPDIR/users` directory recursively
-    const entries = readDir('biliup/users', { dir: BaseDirectory.Config}).then(entries=> {
+    async function readBiliupUsersDir() {
+        let entries = await readDir(await getConfigDir() + "biliup/users");
+        console.log("entries", entries);
         for (const entry of entries) {
-            console.log(`Entry: ${entry.path}`);
-            // console.log("name ", entry.name);
-            invoke('get_myinfo', {fileName: `users/${entry.name}`}).then(ret => {
-                var newVar = {
-                    name: ret['data']['name'],
-                    face: 'noface.jpg',
-                    mid: ret['data']['mid']
-                };
-                user = newVar;
-                people = [...people, newVar]
-                fetch(<string>ret['data']['face'], {method: "GET", responseType: ResponseType.Binary}).then((res)=>{
-                    newVar.face = 'data:image/jpeg;base64,' + arrayBufferToBase64(res.data);
-                    people = [...people]
-                })
-            })
+            console.log("entry.name ", entry.name);
+            let ret = await invoke(INVOKE_COMMANDS.getOthersMyinfo, {fileName: `users/${entry.name}`});
+            console.log(INVOKE_COMMANDS.getOthersMyinfo, ret);
+            let newVar = {
+                name: ret['data']['name'],
+                face: 'noface.jpg',
+                mid: ret['data']['mid']
+            };
+            user = newVar;
+            people = [...people, newVar]
+            let res = await fetch(<string>ret['data']['face'], {method: "GET"});
+            newVar.face = 'data:image/jpeg;base64,' + arrayBufferToBase64(await res.arrayBuffer());
+            people = [...people]
         }
-        return ;
+    }
+
+    readBiliupUsersDir().then(() => {
+        console.log("people", people);
     });
+
     let people = [];
     async function processNewUser() {
         await invoke('logout');
-        await removeFile('biliup/cookies.json', { dir: BaseDirectory.Config });
+        await remove(`${await configDir()}/biliup/cookies.json`);
         isLogin.set(false);
     }
     let user;
     async function processChangeUser() {
-        console.log(user)
-        await copyFile(`biliup/users/${user.mid}.json`, 'biliup/cookies.json', { dir: BaseDirectory.Config });
+        console.log("user", user);
+        await copyFile(`${await configDir()}/biliup/users/${user.mid}.json`, `${await configDir()}/biliup/cookies.json`);
         await invoke('logout');
         face = user.face;
         name = user.name;
         // isLogin.set(false);
     }
+
+    $: console.log("user", user);
+    $: console.log("face", face);
 </script>
 <div class="flex flex-col w-72 h-screen px-4 pt-8 bg-inherit overflow-auto"
      transition:fly={{delay: 400, x: -100}}>
@@ -230,11 +258,16 @@
                     <input type="range" max="128" min="1" bind:value={limit} class="range  range-xs">
                     <!--                    <button class="btn btn-outline">线路: AUTO</button>-->
                     <h4>上传线路选择：</h4>
-                    <div class="btn-group">
+                    <div class="join">
                         {#each lines as l}
-                            <input type="radio" bind:group={line} value="{l}" data-title="{l}" class="btn btn-outline btn-xs">
+                            <input type="radio" bind:group={line} value={l} data-title={l} aria-label={l} class="join-item btn btn-outline">
                         {/each}
                     </div>
+<!--                    <h4>-->
+<!--                        提交前检查内容长度：-->
+<!--                        <input type="checkbox" bind:value={checkInputsBeforeSubmit}>-->
+<!--                    </h4>-->
+
                 </div>
 
                 <div class="modal-action">
@@ -309,7 +342,8 @@
     </div>
 </div>
 
-<style>
+<!-- TODO: enable this -->
+<style lang="postcss">
     .selected {
         @apply text-gray-700 bg-gray-200;
     }
