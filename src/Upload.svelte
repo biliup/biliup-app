@@ -121,21 +121,15 @@
     let autoSubmit = false;
     $: autoSubmit = !!selectedTemplate?.submitCallback;
     function submitCallback() {
-        // if (!checkInputFields(true)) {
-        //     createPop("部分内容长度不符合要求，无法提交", 5000);
-        //     return;
-        // }
+        console.log("submitCallback()");
+        console.log("selectedTemplate", selectedTemplate);
 
         selectedTemplate.videos = selectedTemplate.files;
         let dtime = null;
-        let noreprint = null;
         if (isDtime) {
             dtime = new Date(`${date} ${time}`).valueOf()/1000;
         }
 
-        if ($currentTemplate.selectedTemplate.copyright == CopyrightType.original) {
-            noreprint = noReprint ? 1 : 0;
-        }
         if (selectedTemplate.desc){
             // <input maxlength={} /> will only limits new inputs, if limitation changes, the existing value will not be automatically truncated
             selectedTemplate.desc = selectedTemplate.desc.substring(0, contentLimitation.descriptionLengthByZone(selectedTemplate.tid));
@@ -152,15 +146,17 @@
             msg = '投稿';
             hires_params = { lossless_music: isHiRes ? 1 : 0 };
         }
-        invoke(invokeMethod, {
-                studio: {
-                    ...selectedTemplate,
-                    tag: tags.join(','),
-                    dtime: dtime,
-                    no_reprint: noreprint,
-                    ...hires_params,
-                }
-        })
+        let invokeArgs = {
+            studio: {
+                ...selectedTemplate,
+                tag: tags.join(','),
+                dtime: dtime,
+                no_reprint: $currentTemplate.selectedTemplate.copyright == CopyrightType.original && noReprint ? 1 : 0,
+                ...hires_params,
+            }
+        };
+        console.log("invokeArgs", invokeArgs);
+        invoke(invokeMethod, invokeArgs)
         .then((res) => {
             console.log("res", res);
             if (typeof res == "object" && "bvid" in res) {
