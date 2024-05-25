@@ -24,22 +24,23 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{filter::LevelFilter, prelude::*, Layer, Registry};
 
 #[tauri::command]
-fn login(username: &str, password: &str, remember_me: bool) -> Result<String> {
-    async_runtime::block_on(login_by_password(username, password))?;
+fn login(app: tauri::AppHandle, username: &str, password: &str, remember_me: bool) -> Result<String> {
+    async_runtime::block_on(login_by_password(&app, username, password))?;
     if remember_me {
-        match load() {
+        match load(app.clone()) {
             Ok(mut config) => {
                 if let Some(ref mut user) = config.user {
                     user.account.username = username.into();
                     user.account.password = password.into();
                 }
-                save(config)?;
+                save(app.clone(), config)?;
                 // let file = std::fs::File::create(config_file()?).with_context(|| "open config.yaml")?;
                 // serde_yaml::to_writer(file, &config).with_context(|| "write config.yaml")?
             }
             Err(_) => {
                 // let file = std::fs::File::create("config.yaml").with_context(|| "create config.yaml")?;
-                save(Config {
+                save(app.clone(),
+                     Config {
                     user: Some(User {
                         account: Account {
                             username: username.into(),
@@ -62,15 +63,15 @@ fn logout(credential: tauri::State<'_, Credential>) {
 }
 
 #[tauri::command]
-async fn login_by_cookie(credential: tauri::State<'_, Credential>) -> Result<String> {
-    credential.get_current_user_credential().await?;
+async fn login_by_cookie(app: tauri::AppHandle, credential: tauri::State<'_, Credential>) -> Result<String> {
+    credential.get_current_user_credential(&app).await?;
     Ok("登录成功".into())
 }
 
 #[tauri::command]
-async fn login_by_sms(code: u32, res: serde_json::Value) -> Result<String> {
+async fn login_by_sms(app: tauri::AppHandle, code: u32, res: serde_json::Value) -> Result<String> {
     let info = BiliCredential::new().login_by_sms(code, res).await?;
-    let file = std::fs::File::create(cookie_file()?)?;
+    let file = std::fs::File::create(cookie_file(&app)?)?;
     serde_json::to_writer_pretty(&file, &info)?;
     println!("短信登录成功，数据保存在{:?}", file);
     Ok("登录成功".into())
@@ -83,9 +84,9 @@ async fn send_sms(country_code: u32, phone: u64) -> Result<serde_json::Value> {
 }
 
 #[tauri::command]
-async fn login_by_qrcode(res: serde_json::Value) -> Result<String> {
+async fn login_by_qrcode(app: tauri::AppHandle, res: serde_json::Value) -> Result<String> {
     let info = BiliCredential::new().login_by_qrcode(res).await?;
-    let file = std::fs::File::create(cookie_file()?)?;
+    let file = std::fs::File::create(cookie_file(&app)?)?;
     serde_json::to_writer_pretty(&file, &info)?;
     println!("链接登录成功，数据保存在{:?}", file);
     Ok("登录成功".into())
@@ -122,13 +123,14 @@ async fn get_qrcode() -> Result<serde_json::Value> {
 
 #[tauri::command]
 async fn upload(
+    app: tauri::AppHandle,
     mut video: Video,
     window: Window,
     credential: tauri::State<'_, Credential>,
 ) -> Result<Video> {
-    let bili = &*credential.get_current_user_credential().await?;
+    let bili = &*credential.get_current_user_credential(&app).await?;
 
-    let config = load()?;
+    let config = load(app.clone())?;
     let probe = if let Some(line) = config.line {
         match line.as_str() {
             "kodo" => line::kodo(),
@@ -196,23 +198,24 @@ async fn upload(
 
 #[tauri::command]
 async fn submit(
+    app: tauri::AppHandle,
     studio: Studio,
     credential: tauri::State<'_, Credential>,
 ) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_current_user_credential().await?;
+    let login_info = &*credential.get_current_user_credential(&app).await?;
     let ret = login_info.submit(&studio).await?;
     Ok(ret.data.unwrap())
 }
 
 #[tauri::command]
-async fn archive_pre(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_current_user_credential().await?;
+async fn archive_pre(app: tauri::AppHandle, credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
+    let login_info = &*credential.get_current_user_credential(&app).await?;
     Ok(login_info.archive_pre().await?)
 }
 
 #[tauri::command]
-async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
-    let login_info = &*credential.get_current_user_credential().await?;
+async fn get_myinfo(app: tauri::AppHandle, credential: tauri::State<'_, Credential>) -> Result<serde_json::Value> {
+    let login_info = &*credential.get_current_user_credential(&app).await?;
     Ok(login_info
         .client
         .get("https://api.bilibili.com/x/space/myinfo")
@@ -223,10 +226,10 @@ async fn get_myinfo(credential: tauri::State<'_, Credential>) -> Result<serde_js
 }
 
 #[tauri::command]
-async fn get_others_myinfo(file_name: String) -> Result<serde_json::Value> {
+async fn get_others_myinfo(app: tauri::AppHandle, file_name: String) -> Result<serde_json::Value> {
     println!("file_name {:?}", file_name);
 
-    let login_info = login_by_cookies(config_path()?.join(file_name)).await?;
+    let login_info = login_by_cookies(config_path(&app)?.join(file_name)).await?;
 
     Ok(login_info
         .client
@@ -238,32 +241,33 @@ async fn get_others_myinfo(file_name: String) -> Result<serde_json::Value> {
 }
 
 #[tauri::command]
-fn load_account() -> Result<User> {
-    load()?
+fn load_account(app: tauri::AppHandle) -> Result<User> {
+    load(app)?
         .user
         .ok_or_else(|| Error::Err("账号信息不存在".into()))
 }
 
 #[tauri::command]
-fn save(config: Config) -> Result<Config> {
-    let file = std::fs::File::create(config_file()?)?;
+fn save(app: tauri::AppHandle, config: Config) -> Result<Config> {
+    let file = std::fs::File::create(config_file(&app)?)?;
     serde_yaml::to_writer(file, &config)?;
     Ok(config)
 }
 
 #[tauri::command]
-fn load() -> Result<Config> {
-    let file = std::fs::File::open(config_file()?).with_context(|| "biliup/config.yaml")?;
+fn load(app: tauri::AppHandle) -> Result<Config> {
+    let file = std::fs::File::open(config_file(&app)?).with_context(|| "biliup/config.yaml")?;
     let config: Config = serde_yaml::from_reader(file)?;
     Ok(config)
 }
 
 #[tauri::command]
 async fn cover_up(
+    app: tauri::AppHandle,
     input: Cow<'_, [u8]>,
     credential: tauri::State<'_, Credential>,
 ) -> Result<String> {
-    let bili = &*credential.get_current_user_credential().await?;
+    let bili = &*credential.get_current_user_credential(&app).await?;
     let url = bili.cover_up(&input).await?;
     Ok(url)
 }
@@ -274,8 +278,8 @@ fn is_vid(input: &str) -> bool {
 }
 
 #[tauri::command]
-async fn show_video(input: &str, credential: tauri::State<'_, Credential>) -> Result<Studio> {
-    let login_info = &*credential.get_current_user_credential().await?;
+async fn show_video(app: tauri::AppHandle, input: &str, credential: tauri::State<'_, Credential>) -> Result<Studio> {
+    let login_info = &*credential.get_current_user_credential(&app).await?;
     let data = login_info
         .video_data(&biliup::uploader::bilibili::Vid::from_str(input)?)
         .await?;
@@ -296,10 +300,11 @@ async fn show_video(input: &str, credential: tauri::State<'_, Credential>) -> Re
 
 #[tauri::command]
 async fn edit_video(
+    app: tauri::AppHandle,
     studio: Studio,
     credential: tauri::State<'_, Credential>,
 ) -> Result<serde_json::Value> {
-    let ret = credential.get_current_user_credential().await?.edit(&studio).await?;
+    let ret = credential.get_current_user_credential(&app).await?.edit(&studio).await?;
     Ok(ret)
 }
 
@@ -319,7 +324,7 @@ fn main() {
             let stdout_log = tracing_subscriber::fmt::layer()
                 .pretty()
                 .with_filter(LevelFilter::INFO);
-            let file_appender = tracing_appender::rolling::never(config_path()?, "biliup.log");
+            let file_appender = tracing_appender::rolling::never(config_path(app.handle())?, "biliup.log");
             // let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
             let file_layer = tracing_subscriber::fmt::layer()
                 .with_ansi(false)

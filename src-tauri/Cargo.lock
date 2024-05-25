@@ -382,7 +382,6 @@ dependencies = [
  "anyhow",
  "biliup",
  "bytes",
- "dirs-next",
  "futures",
  "reqwest",
  "serde",
