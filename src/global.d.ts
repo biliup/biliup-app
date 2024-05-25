@@ -8,7 +8,7 @@ export type SelectedTemplate = {
     desc: string,
     dynamic: string,
     files: {
-        completed: boolean,
+        complete: boolean,
         desc: string,
         filename: string,
         id: string,

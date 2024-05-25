@@ -109,6 +109,7 @@ function upload(video: {title: string, filename: string, desc: string, [key:stri
     invoke('upload', {
         video: video
     }).then((res) => {
+        console.log("invoke(upload, video)", res);
         // temp.atomicInt--;
         // video.filename = res[0].filename;
         // video.speed = res[1];
@@ -117,11 +118,15 @@ function upload(video: {title: string, filename: string, desc: string, [key:stri
         currentTemplate.update(t => {
             t.selectedTemplate.files.forEach(file => {
                 if (file.id === video.id) {
+                    console.log(`file.id(${file.id}) === video.id(${video.id})`)
                     file.filename = res.filename;
                     const millis = Date.now() - file.start;
                     file.speed = file.totalSize / 1000 / millis;
                     file.complete = true;
                     file.progress = 100;
+                }
+                else {
+                    console.error(`file.id(${file.id}) !== video.id(${video.id})`);
                 }
             })
             return t;
@@ -143,14 +148,25 @@ function upload(video: {title: string, filename: string, desc: string, [key:stri
     })
 }
 
+function extractFilename(path: string) {
+    if (path.includes("/")) {
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+    else {
+        return path.substring(path.lastIndexOf("\\") + 1);
+    }
+}
+
 export async function progress() {
-    return await listen('progress', event => {
+    return await listen('progress', (event: {payload: any[]}) => {
+        // console.log('listen(progress)', event);
         // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
         // event.payload is the payload object
         // console.log('!', event);
         currentTemplate.update((cur) => {
+            console.log(cur.selectedTemplate['files']);
             for (const file of cur.selectedTemplate['files']) {
-                if (file.id === event.payload[0]) {
+                if (file.id === extractFilename(event.payload[0])) {
                     // file.progress = Math.round(event.payload[1] * 100) / 100;
                     // $speed = Math.round(event.payload[1] * 100) / 100;
                     file.totalSize = event.payload[2];
@@ -168,13 +184,14 @@ export async function progress() {
 
 }
 export async function speed() {
-    return await listen('speed', event => {
+    return await listen('speed', (event: {payload: any[]}) => {
+        // console.log('listen(speed)', event);
         // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
         // event.payload is the payload object
         // console.log('!', event);
         currentTemplate.update((cur) => {
             for (const file of cur.selectedTemplate['files']) {
-                if (file.id === event.payload[0]) {
+                if (file.id === extractFilename(event.payload[0])) {
                     // file.progress = Math.round(event.payload[1] * 100) / 100;
                     // $speed = Math.round(event.payload[1] * 100) / 100;
                     file.totalSize = event.payload[2];

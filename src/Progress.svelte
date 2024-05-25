@@ -31,14 +31,16 @@
     $: {
         $fitSpeed = speed;
         $fitProgress = progress;
+        // console.log("speed", speed);
+        // console.log("progress", progress);
     }
     const current = getCurrent();
 
-    function strToHexCharCode(str) {
+    function strToHexCharCode(str: string): string {
         if(str === "")
             return "";
-        var hexCharCode = [];
-        for(var i = 0; i < str.length; i++) {
+        let hexCharCode = [];
+        for(let i = 0; i < str.length; i++) {
             hexCharCode.push((str.charCodeAt(i)).toString(16));
         }
         return hexCharCode.join("");
