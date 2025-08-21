@@ -2,6 +2,20 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/forgqi/Caution/total)
 [![Telegram](https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram)](https://t.me/+IkpIABHqy6U0ZTQ5)
 
+
+# ⚠️ 仓库已归档！请前往新仓库继续使用 ⚠️
+
+> 🚨 **重要通知：本仓库已停止维护，所有后续开发与更新已迁移至新仓库。**  
+> 👉 请立即访问并使用新的项目地址：[biliup-app-new](https://github.com/biliup/biliup-app-new)
+
+本仓库已归档，仅供参考历史记录。请勿在此提交新的 Issue 或 Pull Request。
+
+----
+
+
+## 🗃️ 以下内容为旧版 README，仅供参考。
+
+<details>
 bilibili投稿客户端，支持Windows，Linux，macOS。
 * 支持多p上传，支持线路切换、并发数控制，上海腾讯云可使用内网线路上传免流+大幅提速。
 * 支持稿件编辑追加多p，可编辑网页端不能编辑的"是否转载"、"投稿分区"等。 
@@ -47,3 +61,4 @@ bilibili投稿客户端，支持Windows，Linux，macOS。
 ```bash
 tauri dev
 ```
+</details>
